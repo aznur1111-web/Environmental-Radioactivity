@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b63ce">
+<meta name="description" content="Aznur IER Radioactivity Calculator — a fast, local-first environmental radioactivity calculation suite for students and researchers.">
+<title>Aznur IER Radioactivity Calculator</title>
+<style>
+:root{
+  --bg:#f6f8fb;--panel:#fff;--line:#dfe5ec;--line2:#edf0f4;--text:#17202a;
+  --muted:#647180;--accent:#0b63ce;--accent2:#094f9f;--soft:#eaf3ff;
+  --ok:#138a4b;--warn:#a86800;--danger:#c43d3d;--shadow:0 1px 2px rgba(16,24,40,.04);
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1180px;margin:0 auto;padding:22px 18px 30px}
+header{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.title-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+h1{font-size:25px;margin:0 0 6px;letter-spacing:-.025em}
+.subtitle{margin:0;color:var(--muted);font-size:14px}
+.badges{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.badge{font-size:11px;padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#fafbfd}
+.badge.local{color:var(--ok);background:#f1fbf5;border-color:#cfead9}
+.toolbar{margin-top:18px;display:flex;gap:9px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1 1 340px}
+.search-wrap input{width:100%;height:44px;border:1px solid var(--line);border-radius:9px;padding:0 42px 0 13px;outline:none;background:#fff}
+.search-wrap input:focus{border-color:#98bfe8;box-shadow:0 0 0 3px rgba(11,99,206,.08)}
+.search-icon{position:absolute;right:13px;top:12px;color:#718096}
+.toolbar button,.select-btn{height:44px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:0 12px;color:#2b3642}
+.toolbar button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar button.primary:hover{background:var(--accent2)}
+.category-bar{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}
+.chip{border:1px solid var(--line);background:#fff;color:#5c6673;border-radius:999px;padding:7px 11px;font-size:12px}
+.chip.active{background:var(--soft);border-color:#b7d2f2;color:var(--accent);font-weight:650}
+main{margin-top:15px}
+.layout{display:grid;grid-template-columns:315px minmax(0,1fr);gap:15px}
+.sidebar,.workspace,.drop-card,.stats-card,.info-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.sidebar{padding:13px;min-height:550px}
+.sidebar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.section-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#798594;font-weight:750}
+.count{font-size:11px;color:var(--muted)}
+.calc-list{display:flex;flex-direction:column;gap:4px;max-height:700px;overflow:auto;padding-right:2px}
+.calc-item{border:1px solid transparent;text-align:left;background:transparent;padding:10px;border-radius:9px;display:block;width:100%}
+.calc-item:hover{background:#f7f9fc}
+.calc-item.active{background:var(--soft);border-color:#cfe0f4}
+.calc-item strong{display:block;font-size:13px;margin-bottom:3px}
+.calc-item span{font-size:11px;color:var(--muted);display:block;line-height:1.35}
+.workspace{padding:17px}
+.workspace-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1px solid var(--line2);padding-bottom:14px}
+.workspace-head h2{margin:0 0 4px;font-size:20px;letter-spacing:-.02em}
+.workspace-head p{margin:0;color:var(--muted);font-size:12px}
+.crumb{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:5px}
+.head-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.small-btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px 9px;font-size:11px;color:#556170}
+.small-btn:hover{background:#f7f9fc}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:16px}
+.field{border:1px solid var(--line2);background:#fbfcfe;padding:10px;border-radius:9px}
+.field label{font-size:11px;color:#4f5965;font-weight:650;display:block;margin-bottom:6px}
+.field-row{display:flex;gap:7px}
+.field input,.field select{width:100%;height:38px;border:1px solid var(--line);border-radius:7px;padding:0 9px;background:#fff;outline:none}
+.field input:focus,.field select:focus{border-color:#98bfe8;box-shadow:0 0 0 2px rgba(11,99,206,.08)}
+.unit{flex:0 0 105px}
+.help{font-size:10px;color:#8994a0;margin-top:5px;line-height:1.35}
+.runbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:15px}
+.run{height:40px;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:0 15px;font-weight:700}
+.run:hover{background:var(--accent2)}
+.reset{height:40px;background:#fff;color:#505c69;border:1px solid var(--line);border-radius:8px;padding:0 13px}
+.result{margin-top:15px;border:1px solid #cfe0f4;background:#f7fbff;border-radius:10px;padding:13px}
+.result-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+.result-head h3{font-size:12px;margin:0;text-transform:uppercase;letter-spacing:.06em;color:#356da9}
+.result-value{font-size:28px;line-height:1.1;font-weight:780;letter-spacing:-.03em}
+.result-unit{font-size:13px;color:#5c6875;font-weight:600;margin-left:6px}
+.result-sub{font-size:11px;color:#687583;margin-top:5px}
+.result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px}
+.result-kv{border:1px solid #dbe8f4;background:#fff;border-radius:7px;padding:8px}
+.result-kv b{display:block;font-size:10px;color:#7b8793;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.result-kv span{font-size:12px;font-weight:650}
+.equation,.notes{margin-top:12px;border-top:1px dashed #d4dee9;padding-top:10px}
+.eq-title{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#7b8793;font-weight:750}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:5px;font-size:12px;color:#25415f;white-space:pre-wrap}
+.notes p{font-size:11px;color:#5e6b78;margin:5px 0;line-height:1.5}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:15px}
+.metric{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+.metric b{display:block;font-size:10px;color:#7e8996;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.metric span{font-size:19px;font-weight:750;display:block;margin-top:4px}
+.bottom{display:grid;grid-template-columns:1.2fr .8fr;gap:15px;margin-top:15px}
+.drop-card{padding:16px;border-style:dashed}
+.drop-zone{border:1px dashed #b9c6d3;border-radius:10px;background:#fbfcfe;padding:24px;text-align:center}
+.drop-zone .big{font-size:28px}
+.drop-zone h3{margin:7px 0 4px;font-size:15px}
+.drop-zone p{margin:0;color:var(--muted);font-size:11px}
+.drop-zone input{display:none}
+.drop-actions{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:12px}
+.stats-card,.info-card{padding:15px}
+.card-title{font-size:12px;font-weight:750;text-transform:uppercase;letter-spacing:.07em;margin:0 0 10px}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mini{border:1px solid var(--line2);background:#fbfcfe;border-radius:8px;padding:10px}
+.mini b{display:block;font-size:10px;color:#7e8996;text-transform:uppercase}
+.mini span{display:block;font-size:18px;font-weight:750;margin-top:3px}
+.info-list{margin:0;padding-left:17px;color:#5f6c79;font-size:11px;line-height:1.65}
+footer{padding:16px 3px 0;color:#788593;font-size:10px;text-align:center}
+.hidden{display:none!important}
+.no-results{padding:24px;text-align:center;color:var(--muted);font-size:12px}
+.modal{position:fixed;inset:0;background:rgba(12,23,36,.36);display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}
+.modal-panel{width:min(960px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:12px;border:1px solid var(--line);box-shadow:0 18px 60px rgba(0,0,0,.18);padding:16px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.modal-head h3{margin:0;font-size:16px}
+.close{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 9px}
+textarea.csv{width:100%;height:250px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line2);white-space:nowrap;text-align:left}
+th{background:#f7f9fc;color:#5f6a76}
+.toast{position:fixed;right:16px;bottom:16px;background:#17202a;color:#fff;padding:9px 12px;border-radius:8px;font-size:11px;box-shadow:0 8px 30px rgba(0,0,0,.2);z-index:30}
+@media (max-width:900px){
+ .layout{grid-template-columns:1fr}.sidebar{min-height:0}.calc-list{max-height:260px}
+ .bottom{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:600px){
+ .app{padding:10px}.title-row{display:block}.badges{justify-content:flex-start;margin-top:10px}
+ .form-grid{grid-template-columns:1fr}.result-grid{grid-template-columns:1fr 1fr}.metrics{grid-template-columns:1fr 1fr}
+ .workspace{padding:12px}.sidebar{padding:10px}
+ h1{font-size:21px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="title-row">
+    <div>
+      <h1>Aznur IER Radioactivity Calculator</h1>
+      <p class="subtitle">Environmental radioactivity calculation toolkit for measurement, ecology, radiochemistry, aquatic systems and modeling.</p>
+    </div>
+    <div class="badges">
+      <span class="badge local">LOCAL-FIRST</span>
+      <span class="badge">NO LOGIN</span>
+      <span class="badge">SINGLE HTML</span>
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input id="search" type="search" placeholder="Search calculator, radionuclide, formula or keyword…">
+      <span class="search-icon">⌕</span>
+    </div>
+    <button class="primary" id="favBtn">★ Favorites</button>
+    <button id="showAllBtn">All calculators</button>
+    <button id="batchBtn">Batch CSV</button>
+    <button id="printBtn">Print</button>
+  </div>
+  <div class="category-bar" id="categories"></div>
+</header>
+
+<main>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-top"><div class="section-label">Calculators</div><div class="count" id="calcCount"></div></div>
+    <div class="calc-list" id="calcList"></div>
+  </aside>
+  <section class="workspace">
+    <div class="workspace-head">
+      <div>
+        <div class="crumb" id="crumb"></div>
+        <h2 id="calcTitle"></h2>
+        <p id="calcDesc"></p>
+      </div>
+      <div class="head-actions">
+        <button class="small-btn" id="favoriteCurrent">☆ Save</button>
+        <button class="small-btn" id="copyFormula">Copy formula</button>
+      </div>
+    </div>
+    <div id="formGrid" class="form-grid"></div>
+    <div class="runbar">
+      <button class="run" id="runBtn">Calculate</button>
+      <button class="reset" id="resetBtn">Reset</button>
+      <button class="reset" id="exportTxtBtn">Export TXT</button>
+    </div>
+    <div id="resultBox" class="result hidden"></div>
+    <div class="metrics">
+      <div class="metric"><b>Calculators</b><span id="mCalcs">0</span></div>
+      <div class="metric"><b>Completed</b><span id="mDone">0</span></div>
+      <div class="metric"><b>Favorites</b><span id="mFav">0</span></div>
+      <div class="metric"><b>Batch Rows</b><span id="mRows">0</span></div>
+      <div class="metric"><b>Status</b><span id="mStatus">Ready</span></div>
+    </div>
+  </section>
+</div>
+
+<div class="bottom">
+  <section class="drop-card">
+    <div class="drop-zone" id="dropZone">
+      <div class="big">📄</div>
+      <h3>Drop a CSV dataset here</h3>
+      <p>Run the active calculator against a table of samples without sending data anywhere.</p>
+      <div class="drop-actions">
+        <button class="small-btn" id="csvBrowse">Select CSV</button>
+        <input id="csvFile" type="file" accept=".csv,text/csv">
+        <button class="small-btn" id="csvPasteBtn">Paste CSV</button>
+      </div>
+    </div>
+  </section>
+  <section class="info-card">
+    <div class="card-title">Calculator notes</div>
+    <ul class="info-list" id="infoList"></ul>
+  </section>
+</div>
+</main>
+
+<footer>
+  Aznur IER Radioactivity Calculator · Calculations are intended for educational/research use. Verify equations, constants, SOPs and regulatory requirements against authoritative sources before reporting results.
+</footer>
+</div>
+
+<div id="batchModal" class="modal hidden">
+  <div class="modal-panel">
+    <div class="modal-head"><h3>Batch CSV Calculator</h3><button class="close" id="closeModal">Close</button></div>
+    <p id="batchHelp" class="subtitle"></p>
+    <div id="batchMap" class="form-grid"></div>
+    <div class="runbar"><button class="run" id="runBatch">Run batch</button><button class="reset" id="downloadBatch">Download CSV</button></div>
+    <div class="table-wrap hidden" id="batchTableWrap"><table><thead id="batchHead"></thead><tbody id="batchBody"></tbody></table></div>
+  </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+'use strict';
+
+const A = (id,title,category,desc,inputs,formula,notes,fn,aliases=[]) => ({id,title,category,desc,inputs,formula,notes,fn,aliases});
+const N = (id,label,unit='',def='',help='') => ({id,label,type:'number',unit,def,help});
+const S = (id,label,options,def,help='') => ({id,label,type:'select',options,def,help});
+
+const calculators = [
+A('decay','Radioactive Decay','Radioactivity','Remaining activity after a known elapsed time.',
+ [N('a0','Initial activity','Bq','1000'),N('t','Elapsed time','years','10'),N('half','Half-life','years','30.05')],
+ 'A(t) = A₀ × 2^(-t / T½)','Closed system; no new source or biological removal is included.',
+ v=>{const a=v.a0*Math.pow(2,-v.t/v.half);return out('Remaining activity',a,'Bq',[kv('Remaining fraction',a/v.a0),kv('Decayed',100*(1-a/v.a0),'%')])},['decay','half life','cs-137']),
+A('halflife','Half-life from activity data','Radioactivity','Infer a half-life from initial and later activity.',
+ [N('a0','Initial activity','Bq','1000'),N('a','Later activity','Bq','750'),N('t','Elapsed time','years','10')],
+ 'T½ = t × ln(2) / ln(A₀ / A)','Requires positive A and A₀ > A.',
+ v=>{const h=v.t*Math.log(2)/Math.log(v.a0/v.a);return out('Half-life',h,'years')},['half-life']),
+A('decayconstant','Decay constant','Radioactivity','Calculate λ from half-life.',
+ [N('half','Half-life','years','30.05')],
+ 'λ = ln(2) / T½','Time unit of λ is the reciprocal of the half-life unit.',
+ v=>out('Decay constant',Math.log(2)/v.half,'1/year'),['lambda','λ']),
+A('atoms','Number of atoms from activity','Radioactivity','Estimate number of radioactive atoms from activity and half-life.',
+ [N('a','Activity','Bq','1000'),N('half','Half-life','years','30.05')],
+ 'N = A / λ','Half-life is converted internally from years to seconds; activity is s⁻¹.',
+ v=>{const sec=v.half*365.25*86400,lam=Math.log(2)/sec;return out('Atoms',v.a/lam,'atoms')},['atoms','specific activity']),
+A('activityFromAtoms','Activity from atoms','Radioactivity','Calculate activity from atom count and half-life.',
+ [N('atoms','Number of atoms','atoms','1e20'),N('half','Half-life','years','30.05')],
+ 'A = λN','Half-life is interpreted in years and converted to seconds.',
+ v=>{const lam=Math.log(2)/(v.half*365.25*86400);return out('Activity',lam*v.atoms,'Bq')},['atoms','activity']),
+A('decayCorrection','Reference-date decay correction','Radioactivity','Move a measured activity to another reference date.',
+ [N('a','Measured activity','Bq','1000'),N('dt','Elapsed from reference to measurement','years','10'),N('half','Half-life','years','30.05'),S('direction','Correction direction',['reference → measurement','measurement → reference'],'reference → measurement')],
+ 'A(t) = A₀ × 2^(-t/T½)','Choose the date direction carefully; this calculator treats dt as positive elapsed time.',
+ v=>{const factor=Math.pow(2,v.dt/v.half);const val=v.direction==='measurement → reference'?v.a*factor:v.a/factor;return out('Corrected activity',val,'Bq',[kv('Factor',v.direction==='measurement → reference'?factor:1/factor)])},['reference date','back correction']),
+A('specificActivity','Specific activity','Radioactivity','Convert total activity and sample mass into mass-normalized activity.',
+ [N('a','Activity','Bq','1000'),N('m','Sample mass','kg','0.5')],
+ 'C = A / m','Keep mass and output basis consistent.',
+ v=>out('Specific activity',v.a/v.m,'Bq/kg'),['bq/kg','concentration']),
+A('volumeActivity','Volumetric activity','Radioactivity','Calculate activity per unit volume.',
+ [N('a','Activity','Bq','1000'),N('v','Volume','L','20')],
+ 'C = A / V','Output assumes volume is entered in litres.',
+ v=>out('Activity concentration',v.a/v.v,'Bq/L'),['bq/l','water']),
+A('surfaceActivity','Surface activity','Radioactivity','Calculate activity normalized to surface area.',
+ [N('a','Activity','Bq','1000'),N('area','Area','m²','10')],
+ 'Cₐ = A / area','Useful for surface or areal inventories.',
+ v=>out('Surface activity',v.a/v.area,'Bq/m²'),['bq/m2','inventory']),
+A('unitActivity','Activity unit conversion','Units','Convert activity between Bq and common legacy units.',
+ [N('value','Value','input','1'),S('from','From',['Bq','kBq','MBq','GBq','Ci','mCi','µCi','nCi'],'Bq'),S('to','To',['Bq','kBq','MBq','GBq','Ci','mCi','µCi','nCi'],'Bq')],
+ 'value × conversion factor','Uses 1 Ci = 3.7×10¹⁰ Bq.',
+ v=>{const f={Bq:1,kBq:1e3,MBq:1e6,GBq:1e9,Ci:3.7e10,mCi:3.7e7,'µCi':3.7e4,nCi:37};return out('Converted activity',v.value*f[v.from]/f[v.to],v.to)},['bq','ci','activity conversion']),
+A('energy','Energy conversion','Units','Convert electron-volts to joules and back.',
+ [N('value','Value','input','1'),S('from','From',['eV','keV','MeV','J'],'MeV'),S('to','To',['eV','keV','MeV','J'],'keV')],
+ 'E = value × unit factor','1 eV = 1.602176634×10⁻¹⁹ J.',
+ v=>{const f={eV:1,keV:1e3,MeV:1e6,J:1/1.602176634e-19};return out('Converted energy',v.value*f[v.from]/f[v.to],v.to)},['kev','mev','joule']),
+A('netCounts','Net counts','Measurement','Subtract background counts from gross counts.',
+ [N('gross','Gross counts','counts','10000'),N('background','Background counts','counts','1200')],
+ 'Nnet = Ngross − Nbackground','Do not truncate counts before the final step.',
+ v=>out('Net counts',v.gross-v.background,'counts'),['background subtraction']),
+A('countRate','Count rate','Measurement','Calculate counts per second from counts and live/counting time.',
+ [N('counts','Counts','counts','5000'),N('time','Counting time','s','3600')],
+ 'R = N / t','Use live time when that is the measurement convention.',
+ v=>out('Count rate',v.counts/v.time,'cps',[kv('Counts per minute',v.counts/v.time*60,'cpm')]),['cps','cpm']),
+A('countingUncertainty','Poisson counting uncertainty','Measurement','Estimate counting standard uncertainty under Poisson counting statistics.',
+ [N('counts','Counts','counts','10000')],
+ 'u(N) ≈ √N','Poisson counting assumes independent counts.',
+ v=>out('Standard uncertainty',Math.sqrt(v.counts),'counts',[kv('Relative uncertainty',Math.sqrt(v.counts)/v.counts*100,'%')]),['poisson','counting statistics']),
+A('efficiency','Detector efficiency','Measurement','Calculate absolute efficiency from observed rate and known activity/emission probability.',
+ [N('rate','Net count rate','cps','100'),N('activity','Source activity','Bq','10000'),N('p','Emission probability','fraction','0.85')],
+ 'ε = R / (A × p)','Use p as a fraction (0–1), not percent.',
+ v=>out('Absolute efficiency',v.rate/(v.activity*v.p),'fraction',[kv('Efficiency',v.rate/(v.activity*v.p)*100,'%')]),['gamma efficiency']),
+A('activityFromCps','Activity from count rate','Measurement','Calculate activity from count rate, efficiency and emission probability.',
+ [N('rate','Net count rate','cps','100'),N('eff','Detector efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85')],
+ 'A = R / (ε × p)','This is a simplified efficiency-corrected activity estimate.',
+ v=>out('Activity',v.rate/(v.eff*v.p),'Bq'),['gamma spectrometry','cps']),
+A('gammaActivity','Gamma spectrometry activity concentration','Measurement','Estimate Bq/kg from net counts, time, efficiency, emission probability and mass.',
+ [N('net','Net counts','counts','10000'),N('time','Live time','s','3600'),N('eff','Efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85'),N('mass','Sample mass','kg','0.5')],
+ 'C = N / (t × ε × p × m)','Add decay, geometry, coincidence and attenuation corrections separately when required by your method.',
+ v=>out('Activity concentration',v.net/(v.time*v.eff*v.p*v.mass),'Bq/kg'),['bq/kg','gamma','spectrometry']),
+A('deadtime','Dead-time correction','Measurement','Correct observed count rate using live and real times.',
+ [N('observed','Observed rate','cps','1000'),N('live','Live time','s','3500'),N('real','Real time','s','3600')],
+ 'Rtrue ≈ Robs × treal / tlive','Simple non-paralyzable live-time correction.',
+ v=>out('Corrected rate',v.observed*v.real/v.live,'cps'),['dead time']),
+A('mdaCurrie','MDA / critical limit (simplified)','MDA','Estimate an MDA-style detection threshold from background count statistics.',
+ [N('background','Background counts','counts','1200'),N('time','Counting time','s','3600'),N('eff','Efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85'),N('mass','Sample mass','kg','0.5'),N('k','Decision factor k','dimensionless','1.645')],
+ 'MDA ≈ (k × √Nb) / (t × ε × p × m)','Screening/educational formula; apply your laboratory’s validated MDA method for reporting.',
+ v=>out('Approx. MDA',v.k*Math.sqrt(v.background)/(v.time*v.eff*v.p*v.mass),'Bq/kg',['kv','Approx. decision factor',v.k]),['mda','minimum detectable activity','detection limit']),
+A('requiredCounting','Required counting time for target MDA','MDA','Approximate counting time needed to reach a target MDA.',
+ [N('backgroundRate','Background rate','cps','0.2'),N('target','Target MDA','Bq/kg','1'),N('eff','Efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85'),N('mass','Sample mass','kg','0.5'),N('k','Decision factor','dimensionless','1.645')],
+ 't ≈ k² × Rb / (MDA² × ε² × p² × m²)','Simplified relation for planning only.',
+ v=>out('Approx. counting time',v.k*v.k*v.backgroundRate/(v.target*v.target*v.eff*v.eff*v.p*v.p*v.mass*v.mass),'s',[kv('Hours',v.k*v.k*v.backgroundRate/(v.target*v.target*v.eff*v.eff*v.p*v.p*v.mass*v.mass)/3600,'h')]),['counting time','mda']),
+A('dryWet','Dry-weight concentration','Environment','Convert wet-basis concentration to dry basis using moisture or dry fraction.',
+ [N('cWet','Wet-basis concentration','Bq/kg wet','100'),N('dryFrac','Dry mass fraction','fraction','0.25')],
+ 'Cdry = Cwet / dry fraction','Dry fraction must be between 0 and 1.',
+ v=>out('Dry-basis concentration',v.cWet/v.dryFrac,'Bq/kg dry'),['dry weight','wet weight']),
+A('wetDry','Wet-weight concentration','Environment','Convert dry-basis concentration to wet basis.',
+ [N('cDry','Dry-basis concentration','Bq/kg dry','100'),N('dryFrac','Dry mass fraction','fraction','0.25')],
+ 'Cwet = Cdry × dry fraction','Dry fraction must be between 0 and 1.',
+ v=>out('Wet-basis concentration',v.cDry*v.dryFrac,'Bq/kg wet'),['wet weight']),
+A('moisture','Moisture content','Environment','Calculate moisture percentage from wet and dry mass.',
+ [N('wet','Wet mass','kg','1.0'),N('dry','Dry mass','kg','0.25')],
+ 'Moisture % = (Wet − Dry) / Wet × 100','Dry mass must not exceed wet mass.',
+ v=>out('Moisture content',(v.wet-v.dry)/v.wet*100,'%'),['water content']),
+A('inventory','Soil radionuclide inventory','Environment','Calculate areal inventory from concentration, bulk density and soil depth.',
+ [N('c','Activity concentration','Bq/kg','1000'),N('rho','Bulk density','kg/m³','1400'),N('depth','Soil depth','m','0.05')],
+ 'I = C × ρ × depth','Assumes uniform concentration and bulk density over the layer.',
+ v=>out('Inventory',v.c*v.rho*v.depth,'Bq/m²'),['soil inventory','bq/m2']),
+A('layeredInventory','Layered soil inventory','Environment','Add inventories from multiple soil layers.',
+ [N('c1','Layer 1 concentration','Bq/kg','1000'),N('rho1','Layer 1 bulk density','kg/m³','1400'),N('d1','Layer 1 depth','m','0.05'),N('c2','Layer 2 concentration','Bq/kg','700'),N('rho2','Layer 2 bulk density','kg/m³','1400'),N('d2','Layer 2 depth','m','0.05')],
+ 'I_total = Σ(Cᵢρᵢdᵢ)','Extensible to more layers by repeating the calculation.',
+ v=>out('Total inventory',v.c1*v.rho1*v.d1+v.c2*v.rho2*v.d2,'Bq/m²',[kv('Layer 1',v.c1*v.rho1*v.d1,'Bq/m²'),kv('Layer 2',v.c2*v.rho2*v.d2,'Bq/m²')]),['soil layers']),
+A('kd','Distribution coefficient Kd','Environment','Calculate a solid-water distribution coefficient.',
+ [N('cs','Solid concentration','Bq/kg','1000'),N('cw','Water concentration','Bq/L','10')],
+ 'Kd = Cs / Cw','Result units depend on the concentration units supplied; this form yields L/kg when using Bq/kg and Bq/L.',
+ v=>out('Kd',v.cs/v.cw,'L/kg'),['sorption','partition coefficient']),
+A('sorptionPercent','Adsorption / sorption percentage','Radiochemistry','Calculate fraction removed from solution.',
+ [N('initial','Initial aqueous amount','Bq','1000'),N('final','Final aqueous amount','Bq','300')],
+ 'Sorption % = (Initial − Final) / Initial × 100','Assumes the difference represents sorbed material.',
+ v=>out('Sorption',((v.initial-v.final)/v.initial)*100,'%'),['adsorption']),
+A('desorptionPercent','Desorption percentage','Radiochemistry','Calculate fraction released relative to an initial sorbed amount.',
+ [N('released','Released amount','Bq','300'),N('initialSorbed','Initial sorbed amount','Bq','1000')],
+ 'Desorption % = Released / Initial sorbed × 100','Use a clearly defined reference amount.',
+ v=>out('Desorption',v.released/v.initialSorbed*100,'%'),['desorption']),
+A('recovery','Recovery / chemical yield','Radiochemistry','Calculate analytical recovery.',
+ [N('recovered','Recovered amount','Bq','850'),N('input','Initial amount','Bq','1000')],
+ 'Recovery % = Recovered / Input × 100','Recovery can exceed 100% because of measurement uncertainty or matrix effects; investigate before accepting.',
+ v=>out('Recovery',v.recovered/v.input*100,'%'),['yield']),
+A('totalRecovery','Combined recovery','Radiochemistry','Combine multiple independent recovery fractions.',
+ [N('chemical','Chemical recovery','fraction','0.90'),N('radiochemical','Radiochemical recovery','fraction','0.95')],
+ 'Rtotal = R₁ × R₂','Use fractions between 0 and 1.',
+ v=>out('Combined recovery',v.chemical*v.radiochemical*100,'%'),['overall recovery']),
+A('riverDischarge','River discharge','Rivers & Lakes','Calculate volumetric flow from cross-sectional area and mean velocity.',
+ [N('area','Cross-sectional area','m²','20'),N('velocity','Mean velocity','m/s','0.5')],
+ 'Q = A × v','Assumes representative cross-sectional mean velocity.',
+ v=>out('Discharge',v.area*v.velocity,'m³/s'),['river flow']),
+A('radFlux','Radionuclide flux','Rivers & Lakes','Calculate instantaneous radionuclide flux from concentration and discharge.',
+ [N('c','Activity concentration','Bq/m³','100'),N('q','Discharge','m³/s','20')],
+ 'F = C × Q','Result is Bq/s when concentration is Bq/m³ and discharge is m³/s.',
+ v=>out('Radionuclide flux',v.c*v.q,'Bq/s',[kv('Daily load',v.c*v.q*86400,'Bq/day')]),['river flux','load']),
+A('dailyLoad','Daily radionuclide load','Rivers & Lakes','Convert flux to daily radionuclide load.',
+ [N('flux','Radionuclide flux','Bq/s','1000')],
+ 'Load/day = F × 86400','Assumes flux is constant over the day.',
+ v=>out('Daily load',v.flux*86400,'Bq/day'),['daily flux']),
+A('annualLoad','Annual radionuclide load','Rivers & Lakes','Convert steady flux to annual load.',
+ [N('flux','Radionuclide flux','Bq/s','1000')],
+ 'Load/year = F × seconds/year','Uses 365.25 days/year.',
+ v=>out('Annual load',v.flux*365.25*86400,'Bq/year'),['annual load']),
+A('sedimentFlux','Suspended sediment flux','Rivers & Lakes','Calculate suspended sediment mass flux.',
+ [N('ssc','Suspended sediment concentration','kg/m³','0.1'),N('q','Discharge','m³/s','20')],
+ 'Fsed = SSC × Q','Result is kg/s when SSC is kg/m³.',
+ v=>out('Sediment flux',v.ssc*v.q,'kg/s'),['sediment load']),
+A('riverMassBalance','River reach mass balance','Rivers & Lakes','Estimate downstream activity from upstream input, added sources and losses.',
+ [N('up','Upstream load','Bq/day','100000'),N('input','Additional input','Bq/day','10000'),N('loss','Loss / removal','Bq/day','20000')],
+ 'Downstream = Upstream + Inputs − Losses','Simple steady-state mass balance.',
+ v=>out('Downstream load',v.up+v.input-v.loss,'Bq/day'),['mass balance']),
+A('residence','Residence time','Rivers & Lakes','Calculate characteristic residence time from storage and flow.',
+ [N('volume','Stored volume','m³','1e6'),N('flow','Flow','m³/s','100')],
+ 'τ = V / Q','Convert to days for convenience.',
+ v=>out('Residence time',v.volume/v.flow/86400,'days',[kv('Hours',v.volume/v.flow/3600,'h')]),['residence time','hydrology']),
+A('dilution','Conservative dilution','Ocean / Water','Calculate mixed concentration after adding a second water volume.',
+ [N('c1','Source concentration','Bq/L','1000'),N('v1','Source volume','L','100'),N('c2','Receiving concentration','Bq/L','0'),N('v2','Receiving volume','L','900')],
+ 'Cmix = (C₁V₁ + C₂V₂) / (V₁ + V₂)','Assumes conservative mixing and no decay during mixing.',
+ v=>out('Mixed concentration',(v.c1*v.v1+v.c2*v.v2)/(v.v1+v.v2),'Bq/L'),['mixing','dilution']),
+A('oceanInventory','Water-column inventory','Ocean / Water','Integrate concentration across a uniform water depth.',
+ [N('c','Activity concentration','Bq/m³','10'),N('depth','Water depth','m','100')],
+ 'I = C × depth','For a uniform concentration; more detailed profiles require numerical integration.',
+ v=>out('Areal inventory',v.c*v.depth,'Bq/m²'),['ocean inventory']),
+A('deposition','Deposition flux','Atmosphere','Calculate deposition flux from air concentration and deposition velocity.',
+ [N('air','Air concentration','Bq/m³','100'),N('vd','Deposition velocity','m/s','0.001')],
+ 'F = C × v_d','Result is Bq/m²/s.',
+ v=>out('Deposition flux',v.air*v.vd,'Bq/m²/s',[kv('Daily deposition',v.air*v.vd*86400,'Bq/m²/day')]),['dry deposition']),
+A('washout','Washout / scavenging ratio','Atmosphere','Calculate a simple washout ratio.',
+ [N('rain','Rainwater concentration','Bq/L','100'),N('air','Air concentration','Bq/m³','0.1')],
+ 'W = Crain / Cair','Units must be consistent with the intended definition; this result is dimensional if inputs are not normalized.',
+ v=>out('Washout ratio',v.rain/v.air),'[' + 'ratio' + ']',['wet deposition','scavenging']),
+A('windTravel','Wind travel time','Atmosphere','Estimate travel time over a horizontal distance.',
+ [N('distance','Distance','km','50'),N('wind','Wind speed','m/s','5')],
+ 't = distance / wind speed','Assumes straight, uniform transport.',
+ v=>out('Travel time',v.distance*1000/v.wind/3600,'hours'),['atmospheric transport']),
+A('firstOrder','First-order removal','Modeling','Calculate concentration after first-order loss.',
+ [N('c0','Initial concentration','Bq/L','100'),N('k','Removal rate constant','1/day','0.05'),N('t','Time','days','20')],
+ 'C(t) = C₀e^(-kt)','Applies to a simple first-order loss model.',
+ v=>out('Concentration',v.c0*Math.exp(-v.k*v.t),'Bq/L',[kv('Remaining fraction',Math.exp(-v.k*v.t))]),['first order','removal']),
+A('compartment','One-compartment continuous input model','Modeling','Solve a first-order compartment with constant input.',
+ [N('input','Constant input','Bq/day','1000'),N('loss','Loss constant','1/day','0.05'),N('c0','Initial amount','Bq','0'),N('t','Time','days','30')],
+ 'C(t) = C₀e^(-kt) + (I/k)(1 − e^(-kt))','Simple single-compartment model.',
+ v=>{const e=Math.exp(-v.loss*v.t);return out('Amount',v.c0*e+(v.input/v.loss)*(1-e),'Bq',[kv('Steady state',v.input/v.loss,'Bq')])},['compartment model']),
+A('twoCompartment','Two-compartment steady state','Modeling','Solve a simple two-compartment steady-state linear exchange model.',
+ [N('input','Input to A','Bq/day','1000'),N('kA','Loss from A','1/day','0.1'),N('kAB','A→B exchange','1/day','0.05'),N('kB','Loss from B','1/day','0.02'),N('kBA','B→A exchange','1/day','0.01')],
+ '0 = I − (kA+kAB)A + kBA B; 0 = kAB A − (kB+kBA)B','Linear two-compartment steady state.',
+ v=>{const Acoef=v.kA+v.kAB, Bcoef=v.kB+v.kBA; const B=v.kAB*v.input/(Acoef*Bcoef-v.kBA*v.kAB); const A=(v.input+v.kBA*B)/Acoef;return out('Compartment A',A,'Bq',[kv('Compartment B',B,'Bq')])},['two compartment']),
+A('steadyState','Steady-state one-compartment amount','Modeling','Calculate steady-state amount from constant input and first-order loss.',
+ [N('input','Input','Bq/day','1000'),N('k','Loss constant','1/day','0.05')],
+ 'C∞ = Input / k','Steady state only applies to a linear first-order model.',
+ v=>out('Steady-state amount',v.input/v.k,'Bq'),['steady state']),
+A('massBalance','Generic mass balance','Modeling','Calculate remaining inventory from inputs and outputs over one interval.',
+ [N('initial','Initial inventory','Bq','100000'),N('inputs','Total inputs','Bq','10000'),N('outputs','Total outputs','Bq','20000')],
+ 'Final = Initial + Inputs − Outputs','For one defined time interval.',
+ v=>out('Final inventory',v.initial+v.inputs-v.outputs,'Bq'),['mass balance']),
+A('transferFactor','Transfer factor','Ecology','Calculate concentration ratio from environmental medium to organism.',
+ [N('organism','Organism concentration','Bq/kg','100'),N('medium','Medium concentration','Bq/kg','1000')],
+ 'TF = Corganism / Cmedium','Both concentrations must use compatible mass bases.',
+ v=>out('Transfer factor',v.organism/v.medium,'ratio'),['concentration ratio','ecology']),
+A('bioaccumulation','Bioaccumulation factor','Ecology','Calculate bioaccumulation relative to water concentration.',
+ [N('organism','Organism concentration','Bq/kg','100'),N('water','Water concentration','Bq/L','0.01')],
+ 'BAF = Corganism / Cwater','Unit result depends on input bases; commonly L/kg for Bq/kg divided by Bq/L.',
+ v=>out('Bioaccumulation factor',v.organism/v.water,'L/kg'),['BAF']),
+A('foodIntake','Radionuclide intake from food','Exposure','Calculate activity intake from food concentration and consumption.',
+ [N('c','Food concentration','Bq/kg','10'),N('cons','Food consumption','kg/day','0.5')],
+ 'I = C × consumption','This is intake only, not dose.',
+ v=>out('Daily intake',v.c*v.cons,'Bq/day'),['ingestion']),
+A('waterIntake','Radionuclide intake from water','Exposure','Calculate activity intake from water concentration and consumption.',
+ [N('c','Water concentration','Bq/L','1'),N('cons','Water consumption','L/day','2')],
+ 'I = C × consumption','This is intake only, not dose.',
+ v=>out('Daily intake',v.c*v.cons,'Bq/day'),['water exposure']),
+A('inhalation','Inhalation activity intake','Exposure','Calculate activity inhaled from air concentration and breathing rate.',
+ [N('c','Air concentration','Bq/m³','0.1'),N('rate','Breathing rate','m³/h','1.2'),N('hours','Exposure duration','h','8')],
+ 'I = C × breathing rate × time','This is intake only, not dose.',
+ v=>out('Activity inhaled',v.c*v.rate*v.hours,'Bq'),['inhalation']),
+A('doseRate','Simple dose rate','Exposure','Estimate dose rate from activity and a supplied dose-rate coefficient.',
+ [N('activity','Activity / activity concentration basis','Bq','1000'),N('coef','Dose coefficient','Sv/Bq','1e-8')],
+ 'Dose rate = A × coefficient','Use only an appropriate, validated coefficient with matching source and geometry.',
+ v=>out('Dose rate',v.activity*v.coef,'Sv/unit time'),['dose rate']),
+A('cumulativeDose','Cumulative dose from constant dose rate','Exposure','Calculate cumulative dose over time.',
+ [N('rate','Dose rate','Sv/day','1e-6'),N('days','Duration','days','365')],
+ 'Dose = rate × time','Constant-rate approximation.',
+ v=>out('Cumulative dose',v.rate*v.days,'Sv'),['dose']),
+A('mean','Arithmetic mean','Statistics','Calculate the arithmetic mean of a list of values.',
+ [N('count','Number of values','n','5'),N('sum','Sum of values','same unit','500')],
+ 'x̄ = Σx / n','For a list, Batch CSV mode is recommended.',
+ v=>out('Mean',v.sum/v.count,'value'),['average']),
+A('weightedMean','Weighted mean','Statistics','Calculate a two-value weighted mean.',
+ [N('x1','Value 1','unit','10'),N('w1','Weight 1','weight','1'),N('x2','Value 2','unit','20'),N('w2','Weight 2','weight','2')],
+ 'x̄w = Σwx / Σw','Weights should be non-negative.',
+ v=>out('Weighted mean',(v.x1*v.w1+v.x2*v.w2)/(v.w1+v.w2),'value'),['average']),
+A('percentChange','Percent change','Statistics','Calculate percentage change from an original to a new value.',
+ [N('old','Original value','unit','100'),N('newv','New value','unit','80')],
+ '% change = (New − Old) / Old × 100','Negative values indicate a decrease.',
+ v=>out('Percent change',(v.newv-v.old)/v.old*100,'%'),['percentage']),
+A('cv','Coefficient of variation','Statistics','Calculate CV from standard deviation and mean.',
+ [N('sd','Standard deviation','unit','10'),N('mean','Mean','unit','100')],
+ 'CV = SD / mean × 100','Mean should be non-zero.',
+ v=>out('Coefficient of variation',v.sd/v.mean*100,'%'),['cv','variability']),
+A('ci95','95% confidence interval for a mean','Statistics','Calculate a normal-approximation 95% CI.',
+ [N('mean','Sample mean','unit','100'),N('sd','Sample standard deviation','unit','10'),N('n','Sample size','n','25')],
+ 'CI ≈ mean ± 1.96 × SD/√n','Normal approximation; use t-based intervals for small samples when appropriate.',
+ v=>{const m=1.96*v.sd/Math.sqrt(v.n);return out('95% CI',`${fmt(v.mean-m)} to ${fmt(v.mean+m)}`,'unit',[kv('Margin',m,'unit')])},['confidence interval']),
+A('poissonRate','Poisson rate uncertainty','Statistics','Estimate count-rate uncertainty from counts and counting time.',
+ [N('counts','Counts','counts','10000'),N('time','Time','s','3600')],
+ 'u(R) = √N / t','Poisson approximation.',
+ v=>out('Rate',v.counts/v.time,'cps',[kv('1σ uncertainty',Math.sqrt(v.counts)/v.time,'cps')]),['poisson']),
+A('rmse','RMSE','Statistics','Calculate RMSE from sum of squared errors and sample count.',
+ [N('sse','Sum squared errors','unit²','100'),N('n','Number of observations','n','25')],
+ 'RMSE = √(SSE / n)','Use n according to your model definition.',
+ v=>out('RMSE',Math.sqrt(v.sse/v.n),'unit'),['model fit']),
+A('mae','MAE','Statistics','Calculate mean absolute error from total absolute error and sample count.',
+ [N('sae','Sum absolute errors','unit','100'),N('n','Number of observations','n','25')],
+ 'MAE = SAE / n','Lower is better for the same units and dataset.',
+ v=>out('MAE',v.sae/v.n,'unit'),['model fit']),
+A('r2','R² from SSE and SST','Statistics','Calculate coefficient of determination from error and total sums of squares.',
+ [N('sse','SSE','unit²','100'),N('sst','SST','unit²','1000')],
+ 'R² = 1 − SSE / SST','R² can be negative for models that perform worse than the mean baseline.',
+ v=>out('R²',1-v.sse/v.sst,'ratio'),['regression','goodness of fit']),
+A('regressionSlope','Simple regression slope','Statistics','Calculate slope from covariance and variance.',
+ [N('cov','Covariance(x,y)','unit²','20'),N('varx','Variance(x)','unit²','10')],
+ 'β₁ = Cov(x,y) / Var(x)','Requires Var(x) > 0.',
+ v=>out('Slope',v.cov/v.varx,'y/x'),['linear regression']),
+A('coordinateDistance','Coordinate distance','Geospatial','Approximate great-circle distance between two latitude/longitude points.',
+ [N('lat1','Latitude 1','deg','37.76'),N('lon1','Longitude 1','deg','140.47'),N('lat2','Latitude 2','deg','37.00'),N('lon2','Longitude 2','deg','140.00')],
+ 'Haversine distance','Spherical-earth approximation using mean Earth radius 6371 km.',
+ v=>{const r=Math.PI/180,p1=v.lat1*r,p2=v.lat2*r,dp=(v.lat2-v.lat1)*r,dl=(v.lon2-v.lon1)*r;const a=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return out('Distance',6371*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)),'km')},['gps','distance']),
+A('decimalDMS','Decimal degrees to DMS','Geospatial','Convert decimal degrees to degrees-minutes-seconds.',
+ [N('deg','Decimal degrees','deg','37.7605')],
+ 'deg = D + M/60 + S/3600','Works for latitude or longitude; sign indicates hemisphere.',
+ v=>{const s=v.deg<0?-1:1,x=Math.abs(v.deg),d=Math.floor(x),m0=(x-d)*60,m=Math.floor(m0),sec=(m0-m)*60;return out('DMS',`${s*d}° ${m}′ ${sec.toFixed(3)}″`,'')},['coordinates','dms']),
+A('sampleSize','Approximate sample size for a mean','Sampling','Estimate sample size from standard deviation, precision and confidence z-value.',
+ [N('sd','Expected standard deviation','unit','10'),N('e','Target half-width / precision','unit','3'),N('z','Z critical value','dimensionless','1.96')],
+ 'n ≈ (z × SD / e)²','Round upward. This ignores finite-population and design effects.',
+ v=>out('Required sample size',Math.ceil((v.z*v.sd/v.e)**2),'samples'),['sampling design']),
+A('gridSpacing','Square sampling grid spacing','Sampling','Calculate approximate grid spacing from target number of sampling points over an area.',
+ [N('area','Study area','km²','100'),N('n','Number of grid points','n','100')],
+ 's ≈ √(Area / n)','This is a simple square-grid approximation.',
+ v=>out('Grid spacing',Math.sqrt(v.area*1e6/v.n),'m'),['sampling grid']),
+A('volumeMass','Density / bulk density','Environment','Calculate density from mass and volume.',
+ [N('mass','Mass','kg','10'),N('volume','Volume','m³','0.01')],
+ 'ρ = m / V','Use total wet or dry basis consistently.',
+ v=>out('Density',v.mass/v.volume,'kg/m³'),['bulk density']),
+A('porosity','Porosity from bulk and particle density','Environment','Estimate porosity from bulk and particle density.',
+ [N('bulk','Bulk density','kg/m³','1400'),N('particle','Particle density','kg/m³','2650')],
+ 'n = 1 − ρb / ρp','Applies to a simple two-density model.',
+ v=>out('Porosity',100*(1-v.bulk/v.particle),'%'),['soil porosity']),
+A('geomean','Geometric mean','Statistics','Calculate a two-value geometric mean.',
+ [N('x1','Value 1','unit','10'),N('x2','Value 2','unit','100')],
+ 'G = √(x₁x₂)','Values must be positive.',
+ v=>out('Geometric mean',Math.sqrt(v.x1*v.x2),'unit'),['geometric mean']),
+A('doublingTime','Doubling time from growth rate','Modeling','Calculate doubling time for a constant exponential growth rate.',
+ [N('r','Growth rate','1/day','0.1')],
+ 't₂ = ln(2) / r','Positive r only.',
+ v=>out('Doubling time',Math.log(2)/v.r,'days'),['growth rate']),
+A('effectiveHalfLife','Effective half-life','Ecology','Calculate effective half-life from an observed first-order loss constant.',
+ [N('k','Ecological loss constant','1/day','0.05')],
+ 'T½,eff = ln(2) / k','This is an empirical effective half-life, not necessarily physical half-life.',
+ v=>out('Effective half-life',Math.log(2)/v.k,'days'),['ecological half life']),
+A('timeIntegrated','Time-integrated concentration','Modeling','Calculate integrated exposure for an exponentially declining concentration.',
+ [N('c0','Initial concentration','Bq/L','100'),N('k','Removal constant','1/day','0.05'),N('t','Integration period','days','30')],
+ '∫Cdt = C₀(1−e^(-kt))/k','Useful for cumulative concentration over a finite period.',
+ v=>out('Integrated concentration',v.c0*(1-Math.exp(-v.k*v.t))/v.k,'Bq·day/L'),['integrated concentration']),
+A('percentDifference','Percent difference between two measurements','Measurement','Calculate absolute percent difference relative to their average.',
+ [N('x1','Measurement 1','unit','100'),N('x2','Measurement 2','unit','110')],
+ '% difference = |x₁−x₂| / ((x₁+x₂)/2) × 100','Useful for duplicate comparison.',
+ v=>out('Percent difference',Math.abs(v.x1-v.x2)/((v.x1+v.x2)/2)*100,'%'),['duplicates','precision']),
+A('relativeError','Relative error','Measurement','Calculate percent error relative to a reference.',
+ [N('measured','Measured value','unit','105'),N('reference','Reference value','unit','100')],
+ 'Relative error = |Measured−Reference| / Reference × 100','Reference should be the accepted or comparison value.',
+ v=>out('Relative error',Math.abs(v.measured-v.reference)/Math.abs(v.reference)*100,'%'),['accuracy']),
+A('percentRecovery','Percent recovery','Measurement','Calculate recovery against a reference or spiked amount.',
+ [N('measured','Measured response','unit','95'),N('expected','Expected response','unit','100')],
+ 'Recovery = Measured / Expected × 100','This is a simple recovery ratio.',
+ v=>out('Recovery',v.measured/v.expected*100,'%'),['recovery']),
+A('simpleFlux','Areal flux','Environment','Calculate flux from areal rate and area.',
+ [N('rate','Areal flux','Bq/m²/day','100'),N('area','Area','m²','1000')],
+ 'Total = flux × area','Assumes rate is spatially uniform.',
+ v=>out('Total areal load',v.rate*v.area,'Bq/day'),['flux','areal flux'])
+];
+
+const fmt=x=>{
+  if(typeof x==='string') return x;
+  if(!Number.isFinite(x)) return '—';
+  const ax=Math.abs(x);
+  if(ax!==0 && (ax>=1e6 || ax<1e-4)) return x.toExponential(6);
+  return Number(x.toFixed(8)).toLocaleString(undefined,{maximumFractionDigits:8});
+};
+const kv=(label,value,unit='')=>({label,value,unit});
+const out=(label,value,unit='',extra=[])=>({label,value,unit,extra:Array.isArray(extra)?extra:[]});
+for(const c of calculators){ if(!c.notes)c.notes=[]; }
+
+const categories=['All','Radioactivity','Units','Measurement','MDA','Environment','Rivers & Lakes','Ocean / Water','Atmosphere','Modeling','Ecology','Exposure','Radiochemistry','Statistics','Geospatial','Sampling'];
+const state={category:'All',query:'',favorites:new Set(JSON.parse(localStorage.getItem('aznur_ier_favs')||'[]')),done:Number(localStorage.getItem('aznur_ier_done')||0),rows:0,current:'decay',lastResult:null,batch:null};
+
+const $=id=>document.getElementById(id);
+function saveState(){localStorage.setItem('aznur_ier_favs',JSON.stringify([...state.favorites]));localStorage.setItem('aznur_ier_done',String(state.done));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.add('hidden'),1800)}
+function showCategories(){
+  $('categories').innerHTML=categories.map(x=>`<button class="chip ${state.category===x?'active':''}" data-cat="${x}">${x}</button>`).join('');
+  $('categories').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{state.category=b.dataset.cat;renderList();showCategories()});
+}
+function visibleCalcs(){
+  let list=calculators;
+  if(state.category!=='All') list=list.filter(c=>c.category===state.category);
+  const q=state.query.trim().toLowerCase();
+  if(q) list=list.filter(c=>(c.title+' '+c.category+' '+c.desc+' '+c.formula+' '+c.aliases.join(' ')).toLowerCase().includes(q));
+  if(state.favoriteOnly) list=list.filter(c=>state.favorites.has(c.id));
+  return list;
+}
+function renderList(){
+  const list=visibleCalcs();
+  $('calcCount').textContent=`${list.length} shown`;
+  $('calcList').innerHTML=list.length?list.map(c=>`<button class="calc-item ${state.current===c.id?'active':''}" data-id="${c.id}"><strong>${state.favorites.has(c.id)?'★ ':''}${c.title}</strong><span>${c.category} · ${c.desc}</span></button>`).join(''):`<div class="no-results">No calculator matches the current search/filter.</div>`;
+  $('calcList').querySelectorAll('.calc-item').forEach(b=>b.onclick=()=>selectCalc(b.dataset.id));
+  $('mCalcs').textContent=calculators.length;
+  $('mDone').textContent=state.done;
+  $('mFav').textContent=state.favorites.size;
+}
+function selectCalc(id){
+  state.current=id; state.lastResult=null; const c=calculators.find(x=>x.id===id);
+  $('crumb').textContent=c.category;
+  $('calcTitle').textContent=c.title;
+  $('calcDesc').textContent=c.desc;
+  $('formGrid').innerHTML=c.inputs.map(i=>{
+    if(i.type==='select'){
+      return `<div class="field"><label>${i.label}</label><select id="in_${i.id}">${i.options.map(o=>`<option ${o===i.def?'selected':''}>${o}</option>`).join('')}</select>${i.help?`<div class="help">${i.help}</div>`:''}</div>`;
+    }
+    return `<div class="field"><label>${i.label}</label><div class="field-row"><input id="in_${i.id}" type="number" step="any" value="${i.def}"><input class="unit" disabled value="${i.unit}"></div>${i.help?`<div class="help">${i.help}</div>`:''}</div>`;
+  }).join('');
+  $('favoriteCurrent').textContent=state.favorites.has(c.id)?'★ Saved':'☆ Save';
+  $('resultBox').classList.add('hidden');
+  $('infoList').innerHTML=[c.notes, 'Use compatible units throughout the calculation.', 'Verify your laboratory SOP, method validation and authoritative reference values before reporting results.'].flat().map(x=>`<li>${x}</li>`).join('');
+  renderList();
+}
+function getValues(c){
+  const v={};
+  for(const i of c.inputs){
+    const el=$('in_'+i.id);
+    if(i.type==='select') v[i.id]=el.value;
+    else {const n=Number(el.value); if(!Number.isFinite(n)) throw new Error(`Enter a valid value for "${i.label}".`); v[i.id]=n;}
+  }
+  return v;
+}
+function renderResult(r,c){
+  state.lastResult=r;
+  const extras=r.extra||[];
+  $('resultBox').innerHTML=`
+    <div class="result-head"><h3>Result</h3><span class="badge">Computed locally</span></div>
+    <div><span class="result-value">${typeof r.value==='number'?fmt(r.value):r.value}</span><span class="result-unit">${r.unit||''}</span></div>
+    <div class="result-sub">${r.label}</div>
+    ${extras.length?`<div class="result-grid">${extras.map(x=>`<div class="result-kv"><b>${x.label}</b><span>${typeof x.value==='number'?fmt(x.value):x.value} ${x.unit||''}</span></div>`).join('')}</div>`:''}
+    <div class="equation"><div class="eq-title">Equation</div><div class="eq">${c.formula}</div></div>
+    <div class="notes"><div class="eq-title">Notes</div><p>${c.notes}</p><p>Result generated: ${new Date().toLocaleString()}</p></div>`;
+  $('resultBox').classList.remove('hidden');
+}
+function calculate(){
+  const c=calculators.find(x=>x.id===state.current);
+  try{
+    const v=getValues(c); const r=c.fn(v); renderResult(r,c); state.done++; saveState(); $('mDone').textContent=state.done; $('mStatus').textContent='Calculated'; toast('Calculation complete');
+  }catch(e){toast(e.message)}
+}
+$('runBtn').onclick=calculate;
+$('resetBtn').onclick=()=>selectCalc(state.current);
+$('search').oninput=e=>{state.query=e.target.value;renderList()};
+$('showAllBtn').onclick=()=>{state.category='All';state.query='';$('search').value='';state.favoriteOnly=false;showCategories();renderList()};
+$('favBtn').onclick=()=>{state.favoriteOnly=!state.favoriteOnly; $('favBtn').textContent=state.favoriteOnly?'★ All favorites':'★ Favorites'; renderList()};
+$('favoriteCurrent').onclick=()=>{const id=state.current;if(state.favorites.has(id))state.favorites.delete(id);else state.favorites.add(id);saveState();selectCalc(id)};
+$('copyFormula').onclick=async()=>{const c=calculators.find(x=>x.id===state.current);try{await navigator.clipboard.writeText(c.formula);toast('Formula copied')}catch{toast('Clipboard unavailable')}};
+$('exportTxtBtn').onclick=()=>{
+ const c=calculators.find(x=>x.id===state.current);
+ if(!state.lastResult){toast('Calculate first');return}
+ const r=state.lastResult;
+ const txt=`Aznur IER Radioactivity Calculator\n${c.title}\nCategory: ${c.category}\n\nResult: ${r.label}\nValue: ${typeof r.value==='number'?r.value:r.value} ${r.unit||''}\n\nEquation:\n${c.formula}\n\nNotes:\n${c.notes}\n\nGenerated: ${new Date().toISOString()}\n`;
+ downloadBlob(txt,`aznur-ier-${c.id}.txt`,'text/plain');
+};
+$('printBtn').onclick=()=>window.print();
+function downloadBlob(content,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+
+$('csvBrowse').onclick=()=>{$('csvFile').click()};
+$('csvFile').onchange=e=>{if(e.target.files[0])readCSVFile(e.target.files[0])};
+$('dropZone').ondragover=e=>{e.preventDefault();$('dropZone').style.background='#f0f7ff'};
+$('dropZone').ondragleave=()=>{$('dropZone').style.background='#fbfcfe'};
+$('dropZone').ondrop=e=>{e.preventDefault();$('dropZone').style.background='#fbfcfe';const f=e.dataTransfer.files[0];if(f)readCSVFile(f)};
+$('csvPasteBtn').onclick=()=>{openBatch('');};
+function readCSVFile(file){const r=new FileReader();r.onload=()=>openBatch(r.result);r.readAsText(file)}
+function parseCSV(text){
+  const rows=[];let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];if(ch==='"'){if(q&&nx==='"'){cell+='"';i++}else q=!q}
+    else if(ch===','&&!q){row.push(cell);cell=''}
+    else if((ch==='\\n'||ch==='\\r')&&!q){if(ch==='\\r'&&nx==='\\n')i++;row.push(cell);if(row.some(x=>x!==''))rows.push(row);row=[];cell=''}else cell+='';}
+  if(cell!==''||row.length){row.push(cell);rows.push(row)}
+  return rows;
+}
+let csvRows=[];
+function openBatch(text){
+  $('batchModal').classList.remove('hidden');
+  if(!text){$('batchHelp').textContent='Paste or upload CSV data, then map headers to the active calculator inputs.';$('batchMap').innerHTML=`<textarea class="csv" id="pasteArea" placeholder="Sample,Cps,Mass\nS001,1000,0.5\nS002,800,0.4"></textarea>`; $('runBatch').onclick=()=>{const t=$('pasteArea').value;csvRows=parseCSV(t);buildBatchMap();};return}
+  csvRows=parseCSV(text);buildBatchMap();
+}
+function buildBatchMap(){
+  if(!csvRows.length)return;
+  const headers=csvRows[0];
+  const c=calculators.find(x=>x.id===state.current);
+  $('batchHelp').textContent=`Active calculator: ${c.title}. Choose which CSV column supplies each numeric input.`;
+  $('batchMap').innerHTML=c.inputs.map(i=>{
+    const options=['(skip)',...headers];
+    return `<div class="field"><label>${i.label}</label><select data-map="${i.id}">${options.map((o,idx)=>`<option ${idx===0?'selected':''}>${o}</option>`).join('')}</select></div>`;
+  }).join('');
+  $('runBatch').onclick=runBatch;
+}
+function runBatch(){
+  const c=calculators.find(x=>x.id===state.current), headers=csvRows[0], maps={};
+  document.querySelectorAll('[data-map]').forEach(s=>maps[s.dataset.map]=s.value);
+  const body=[];
+  for(let r=1;r<csvRows.length;r++){
+    const obj={}; c.inputs.forEach(i=>{if(i.type==='select')obj[i.id]=i.def;else{const h=maps[i.id];obj[i.id]=h==='(skip)'||!h?Number(i.def):Number(rIndex(r,h));}});
+    try{const result=c.fn(obj);body.push({row:r,values:[...r.map((x)=>x),typeof result.value==='number'?fmt(result.value):result.value,result.unit||'', 'OK']})}
+    catch(e){body.push({row:r,values:[...r,'','',e.message]})}
+  }
+  state.rows=body.length; $('mRows').textContent=state.rows;
+  $('batch').lastResult=body;
+  renderBatchTable(body,headers,c);
+  toast(`Processed ${body.length} rows`);
+}
+function rIndex(row,header){const idx=csvRows[0].indexOf(header);return idx>=0?csvRows[row][idx]:''}
+function renderBatchTable(body,headers,c){
+  $('batchTableWrap').classList.remove('hidden');
+  $('batchHead').innerHTML='<tr>'+[...headers,'Result','Unit','Status'].map(x=>`<th>${x}</th>`).join('')+'</tr>';
+  $('batchBody').innerHTML=body.map(b=>'<tr>'+b.values.map(x=>`<td>${x}</td>`).join('')+'</tr>').join('');
+}
+$('closeModal').onclick=()=>$('batchModal').classList.add('hidden');
+$('batchModal').onclick=e=>{if(e.target===$('batchModal'))$('batchModal').classList.add('hidden')};
+$('downloadBatch').onclick=()=>{
+  if(!state.batch||!state.batch.lastResult){toast('Run batch first');return}
+  const headers=[...csvRows[0],'Result','Unit','Status'];
+  const lines=[headers.map(csvEsc).join(',')];
+  for(const r of state.batch.lastResult)lines.push(r.values.map(csvEsc).join(','));
+  downloadBlob(lines.join('\\n'),'aznur-ier-batch-results.csv','text/csv');
+};
+function csvEsc(x){x=String(x??'');return /[",\\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x}
+state.batch={lastResult:null};
+showCategories();
+selectCalc('decay');
+$('mCalcs').textContent=calculators.length;
+$('mFav').textContent=state.favorites.size;
+$('mDone').textContent=state.done;
+</script>
+</body>
+</html>
