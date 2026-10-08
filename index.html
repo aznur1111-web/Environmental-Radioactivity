@@ -1,240 +1,634 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b63ce">
-<meta name="description" content="Aznur IER Radioactivity Calculator — a fast, local-first environmental radioactivity calculation suite for students and researchers.">
-<title>Aznur IER Radioactivity Calculator</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fafafa">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Aznur IER environmental radioactivity toolbook and visual lab. Offline, single-file, fast. Calculations and saved settings stay on your device.">
+<title>AZNUR IER | Environmental Radioactivity Toolbook</title>
 <style>
+/* ============================================================
+   AZNUR IER | stone + amber light theme, dark lab stage
+   ============================================================ */
 :root{
-  --bg:#f6f8fb;--panel:#fff;--line:#dfe5ec;--line2:#edf0f4;--text:#17202a;
-  --muted:#647180;--accent:#0b63ce;--accent2:#094f9f;--soft:#eaf3ff;
-  --ok:#138a4b;--warn:#a86800;--danger:#c43d3d;--shadow:0 1px 2px rgba(16,24,40,.04);
-  --radius:12px;
+  --bg:#fafafa; --surface:#fff; --surface-soft:#f7f5f2;
+  --border:#e7e5e4; --text:#1c1917; --muted:#57534e; --faint:#78716c;
+  --accent:#f59e0b; --accent-h:#d97706; --ok:#10b981; --err:#ef4444;
+  --shadow:0 1px 2px rgba(0,0,0,.05);
+  --r:6px; --rl:10px;
+  --mono:"Cascadia Mono","IBM Plex Mono",Consolas,"Liberation Mono",monospace;
+  --sans:"Segoe UI",Inter,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  --lbg:#191512; --lbg2:#211d18; --lline:#2a2620; --ltext:#f5f5f4; --lmuted:#a8a29e; --ltrace:#fbbf24;
 }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{min-height:100vh}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
-.app{max-width:1180px;margin:0 auto;padding:22px 18px 30px}
-header{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-.title-row{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
-h1{font-size:25px;margin:0 0 6px;letter-spacing:-.025em}
-.subtitle{margin:0;color:var(--muted);font-size:14px}
-.badges{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-.badge{font-size:11px;padding:5px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#fafbfd}
-.badge.local{color:var(--ok);background:#f1fbf5;border-color:#cfead9}
-.toolbar{margin-top:18px;display:flex;gap:9px;flex-wrap:wrap}
-.search-wrap{position:relative;flex:1 1 340px}
-.search-wrap input{width:100%;height:44px;border:1px solid var(--line);border-radius:9px;padding:0 42px 0 13px;outline:none;background:#fff}
-.search-wrap input:focus{border-color:#98bfe8;box-shadow:0 0 0 3px rgba(11,99,206,.08)}
-.search-icon{position:absolute;right:13px;top:12px;color:#718096}
-.toolbar button,.select-btn{height:44px;border:1px solid var(--line);background:#fff;border-radius:9px;padding:0 12px;color:#2b3642}
-.toolbar button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.toolbar button.primary:hover{background:var(--accent2)}
-.category-bar{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}
-.chip{border:1px solid var(--line);background:#fff;color:#5c6673;border-radius:999px;padding:7px 11px;font-size:12px}
-.chip.active{background:var(--soft);border-color:#b7d2f2;color:var(--accent);font-weight:650}
-main{margin-top:15px}
-.layout{display:grid;grid-template-columns:315px minmax(0,1fr);gap:15px}
-.sidebar,.workspace,.drop-card,.stats-card,.info-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.sidebar{padding:13px;min-height:550px}
-.sidebar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.section-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#798594;font-weight:750}
-.count{font-size:11px;color:var(--muted)}
-.calc-list{display:flex;flex-direction:column;gap:4px;max-height:700px;overflow:auto;padding-right:2px}
-.calc-item{border:1px solid transparent;text-align:left;background:transparent;padding:10px;border-radius:9px;display:block;width:100%}
-.calc-item:hover{background:#f7f9fc}
-.calc-item.active{background:var(--soft);border-color:#cfe0f4}
-.calc-item strong{display:block;font-size:13px;margin-bottom:3px}
-.calc-item span{font-size:11px;color:var(--muted);display:block;line-height:1.35}
-.workspace{padding:17px}
-.workspace-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:1px solid var(--line2);padding-bottom:14px}
-.workspace-head h2{margin:0 0 4px;font-size:20px;letter-spacing:-.02em}
-.workspace-head p{margin:0;color:var(--muted);font-size:12px}
-.crumb{font-size:11px;color:var(--accent);font-weight:700;margin-bottom:5px}
-.head-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.small-btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px 9px;font-size:11px;color:#556170}
-.small-btn:hover{background:#f7f9fc}
-.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:16px}
-.field{border:1px solid var(--line2);background:#fbfcfe;padding:10px;border-radius:9px}
-.field label{font-size:11px;color:#4f5965;font-weight:650;display:block;margin-bottom:6px}
-.field-row{display:flex;gap:7px}
-.field input,.field select{width:100%;height:38px;border:1px solid var(--line);border-radius:7px;padding:0 9px;background:#fff;outline:none}
-.field input:focus,.field select:focus{border-color:#98bfe8;box-shadow:0 0 0 2px rgba(11,99,206,.08)}
-.unit{flex:0 0 105px}
-.help{font-size:10px;color:#8994a0;margin-top:5px;line-height:1.35}
-.runbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:15px}
-.run{height:40px;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:0 15px;font-weight:700}
-.run:hover{background:var(--accent2)}
-.reset{height:40px;background:#fff;color:#505c69;border:1px solid var(--line);border-radius:8px;padding:0 13px}
-.result{margin-top:15px;border:1px solid #cfe0f4;background:#f7fbff;border-radius:10px;padding:13px}
-.result-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
-.result-head h3{font-size:12px;margin:0;text-transform:uppercase;letter-spacing:.06em;color:#356da9}
-.result-value{font-size:28px;line-height:1.1;font-weight:780;letter-spacing:-.03em}
-.result-unit{font-size:13px;color:#5c6875;font-weight:600;margin-left:6px}
-.result-sub{font-size:11px;color:#687583;margin-top:5px}
-.result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px}
-.result-kv{border:1px solid #dbe8f4;background:#fff;border-radius:7px;padding:8px}
-.result-kv b{display:block;font-size:10px;color:#7b8793;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
-.result-kv span{font-size:12px;font-weight:650}
-.equation,.notes{margin-top:12px;border-top:1px dashed #d4dee9;padding-top:10px}
-.eq-title{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#7b8793;font-weight:750}
-.eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin-top:5px;font-size:12px;color:#25415f;white-space:pre-wrap}
-.notes p{font-size:11px;color:#5e6b78;margin:5px 0;line-height:1.5}
-.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:15px}
-.metric{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 10px}
-.metric b{display:block;font-size:10px;color:#7e8996;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
-.metric span{font-size:19px;font-weight:750;display:block;margin-top:4px}
-.bottom{display:grid;grid-template-columns:1.2fr .8fr;gap:15px;margin-top:15px}
-.drop-card{padding:16px;border-style:dashed}
-.drop-zone{border:1px dashed #b9c6d3;border-radius:10px;background:#fbfcfe;padding:24px;text-align:center}
-.drop-zone .big{font-size:28px}
-.drop-zone h3{margin:7px 0 4px;font-size:15px}
-.drop-zone p{margin:0;color:var(--muted);font-size:11px}
-.drop-zone input{display:none}
-.drop-actions{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:12px}
-.stats-card,.info-card{padding:15px}
-.card-title{font-size:12px;font-weight:750;text-transform:uppercase;letter-spacing:.07em;margin:0 0 10px}
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mini{border:1px solid var(--line2);background:#fbfcfe;border-radius:8px;padding:10px}
-.mini b{display:block;font-size:10px;color:#7e8996;text-transform:uppercase}
-.mini span{display:block;font-size:18px;font-weight:750;margin-top:3px}
-.info-list{margin:0;padding-left:17px;color:#5f6c79;font-size:11px;line-height:1.65}
-footer{padding:16px 3px 0;color:#788593;font-size:10px;text-align:center}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- Header ---------- */
+header{position:sticky;top:0;z-index:30;background:var(--surface);
+  border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;
+  padding:0 20px;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;min-width:190px}
+.brand-mark{width:32px;height:32px;border:1px solid var(--accent);border-radius:7px;
+  display:grid;place-items:center;color:var(--accent-h);font:700 14px var(--mono);background:#fffbeb}
+.brand-name{font-weight:700;letter-spacing:1.4px;font-size:14px}
+.brand-sub{display:block;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:1px}
+.tabs{display:flex;gap:4px;overflow-x:auto;flex:1;height:100%;align-items:flex-end;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:transparent;padding:0 11px;height:64px;color:var(--muted);
+  font-size:12px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent-h);border-color:var(--accent)}
+.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.mini{height:32px;padding:0 12px;border:1px solid var(--border);background:var(--surface);
+  border-radius:var(--r);color:var(--muted);font-size:11px;font-weight:600;transition:all .2s}
+.mini:hover{border-color:var(--accent);background:#fffbeb;color:var(--text)}
+.mini.primary{background:var(--text);border-color:var(--text);color:#fff}
+.mini.primary:hover{background:#333;border-color:#333}
+
+/* ---------- Layout ---------- */
+#layout{display:flex;min-height:calc(100vh - 64px)}
+aside{width:250px;flex:0 0 250px;background:var(--bg);border-right:1px solid var(--border);
+  position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+.side-head{padding:16px 16px 10px;color:var(--muted);font-size:10px;letter-spacing:1.4px;
+  text-transform:uppercase;font-weight:600}
+.side-group{border-top:1px solid var(--border)}
+.side-btn{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border:0;background:transparent;padding:10px 16px;color:var(--muted);text-align:left;
+  font-size:12px;transition:all .2s}
+.side-btn:hover{background:var(--surface);color:var(--text)}
+.side-btn.on{color:var(--accent-h);background:var(--surface);font-weight:600}
+.side-btn b{font:500 9px var(--mono);color:var(--muted);background:var(--surface-soft);
+  border:1px solid var(--border);padding:2px 6px;border-radius:4px}
+main{min-width:0;flex:1;padding:24px 24px 40px}
+.page{max-width:1480px;margin:0 auto}
+
+/* ---------- Hero / pages ---------- */
+.hero{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.hero-text{flex:1;min-width:200px}
+.hero h1{font-size:1.7rem;font-weight:700;letter-spacing:-.4px;margin:0}
+.hero p{color:var(--muted);font-size:.9rem;margin-top:4px;max-width:760px}
+.hero .tag{border:1px solid var(--border);background:var(--surface);border-radius:999px;
+  padding:6px 12px;font:600 10px var(--mono);color:var(--accent-h);white-space:nowrap}
+.pane{display:none}
+.pane.on{display:block;animation:fade .18s ease-out}
+@keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+/* ---------- Grid / cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}
+.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);
+  box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:13px}
+.card h2,.card h3{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent-h);
+  margin:0;font-weight:700}
+.card h2 small,.card h3 small{color:var(--muted);font-size:10px;text-transform:none;
+  letter-spacing:0;font-weight:400;margin-left:6px}
+.card.accent{border-top:2px solid var(--accent)}
+.desc{font-size:11px;color:var(--muted);line-height:1.5}
+@keyframes cardflash{0%{box-shadow:0 0 0 0 rgba(245,158,11,.55)}
+  70%{box-shadow:0 0 0 7px rgba(245,158,11,0)}100%{box-shadow:var(--shadow)}}
+.card.flash{animation:cardflash 1.2s ease-out}
+
+/* ---------- Forms ---------- */
+.fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.field{display:grid;grid-template-columns:112px 1fr 64px;align-items:center;gap:8px}
+.field.no-unit{grid-template-columns:112px 1fr}
+.field.full{grid-column:1 / -1}
+.field label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.field input,.field select{height:32px;width:100%;border:1px solid var(--border);background:var(--surface);
+  border-radius:var(--r);padding:0 10px;color:var(--text);font-family:var(--mono);font-size:12px;text-align:right}
+.field select{text-align:left}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(245,158,11,.12)}
+.unit{font:10px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- Buttons ---------- */
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{height:32px;border:1px solid var(--border);background:var(--surface);border-radius:var(--r);
+  padding:0 14px;color:var(--muted);font-size:11px;font-weight:600;transition:all .2s}
+.btn:hover{border-color:var(--accent);background:#fffbeb;color:var(--text)}
+.btn.primary{background:var(--text);color:#fff;border-color:var(--text)}
+.btn.primary:hover{background:#333;border-color:#333}
+.btn.on{border-color:var(--accent);background:#fffbeb;color:var(--accent-h)}
+
+/* ---------- Results ---------- */
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 12px;min-width:0}
+.stat .k{font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;font-weight:600}
+.stat .v{font:700 15px var(--mono);color:var(--text);margin:4px 0 0;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.stat .u{font-size:10px;color:var(--muted);font-weight:400}
+.stat.hot .v{color:var(--accent-h)}
+.stat.good .v{color:var(--ok)}
+.stat.bad .v{color:var(--err)}
+.stat.wide{grid-column:1 / -1}
+.stat.wide .v{font-size:11.5px;white-space:normal;overflow:visible;font-weight:600}
+.formula{font:11px/1.6 var(--mono);color:var(--muted);background:#fffbeb;
+  border-left:2px solid var(--accent);padding:10px 12px;border-radius:0 var(--r) var(--r) 0}
+.formula b{color:var(--text)}
+.note{font-size:11px;color:var(--muted);line-height:1.6}
+.note-list{margin:0 0 0 16px;color:var(--muted);font-size:11px;line-height:1.7}
+.notice{padding:10px;border:1px dashed #d6d3d1;background:#fafafa;border-radius:var(--r);
+  font-size:11px;color:var(--muted);line-height:1.6}
+
+/* ---------- Search / tool list ---------- */
+.search{display:flex;gap:8px}
+.search input{flex:1;height:34px;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--surface);padding:0 10px;font:12px var(--sans);color:var(--text)}
+.search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(245,158,11,.12)}
+.list{display:grid;gap:6px;max-height:352px;overflow-y:auto;padding-right:2px}
+.list-btn{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;
+  padding:8px 10px;border:1px solid var(--border);background:var(--surface);border-radius:var(--r);
+  color:var(--muted);font-size:11px;text-align:left;transition:all .15s}
+.list-btn:hover{border-color:var(--accent);background:#fffbeb;color:var(--text)}
+.list-btn strong{color:var(--text);font-weight:600}
+.list-btn span{font:9px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.no-results{padding:20px;text-align:center;color:var(--muted);font-size:11px}
+
+/* ---------- Tables ---------- */
+.table-scroll{overflow:auto;border:1px solid var(--border);border-radius:var(--r);
+  max-height:420px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font:11px var(--mono)}
+th,td{padding:8px 10px;border:1px solid var(--border);text-align:right;white-space:nowrap}
+th{position:sticky;top:0;background:#fafafa;color:var(--muted);font-weight:600;
+  text-transform:uppercase;font-size:9px;letter-spacing:.5px}
+td{color:var(--text)}
+td.l,th.l{text-align:left}
+
+/* ---------- Formula grid (reference) ---------- */
+.formula-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ftile{border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;background:var(--surface)}
+.ftile:hover{border-color:var(--accent)}
+.ftile h3{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-h);margin:0 0 6px}
+.ftile code{display:block;font:11px/1.6 var(--mono);color:var(--muted);white-space:pre-wrap}
+
+/* ---------- Visual Lab ---------- */
+.lab-shell{background:var(--lbg);border-radius:14px;border:1px solid #2a2521;overflow:hidden;
+  box-shadow:0 10px 30px -18px rgba(28,25,23,.55)}
+.lab-top{display:flex;align-items:center;gap:14px;padding:10px 14px;flex-wrap:wrap;
+  background:var(--lbg2);border-bottom:1px solid var(--lline)}
+.lab-modes{display:flex;gap:2px;background:#141110;padding:3px;border-radius:9px;flex-wrap:wrap}
+.lab-mode{height:28px;padding:0 12px;border:0;border-radius:6px;background:transparent;
+  color:var(--lmuted);font-size:11px;font-weight:600;transition:all .15s}
+.lab-mode:hover{color:var(--ltext)}
+.lab-mode.on{background:var(--accent);color:#1c1917}
+.lab-transport{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lab-btn{width:30px;height:30px;display:grid;place-items:center;background:#141110;
+  border:1px solid var(--lline);border-radius:7px;color:var(--ltext);transition:all .15s}
+.lab-btn:hover{background:#2e2924;color:var(--ltrace);border-color:#3d362e}
+.lab-speed{display:flex;align-items:center;gap:8px;font-size:9px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--lmuted)}
+.lab-speed input{width:88px}
+.lab-speed span{font:600 10px var(--mono);color:var(--ltrace);min-width:38px}
+.lab-shell input[type=range]{-webkit-appearance:none;appearance:none;height:16px;
+  background:transparent;cursor:pointer}
+.lab-shell input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:#3d372f}
+.lab-shell input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  margin-top:-5px;border-radius:50%;background:var(--accent);border:2px solid var(--lbg);
+  box-shadow:0 0 0 1.5px var(--accent)}
+.lab-shell input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:#3d372f}
+.lab-shell input[type=range]::-moz-range-thumb{width:10px;height:10px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--lbg);box-shadow:0 0 0 1.5px var(--accent)}
+.lab-hint{padding:9px 14px;background:var(--lbg2);border-bottom:1px solid var(--lline);
+  color:var(--lmuted);font-size:11px;line-height:1.5}
+.lab-stage{position:relative;height:clamp(340px,52vh,520px);background:#141110}
+.lab-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+.lab-readouts{position:absolute;top:10px;right:12px;display:flex;gap:6px;flex-wrap:wrap;
+  justify-content:flex-end;max-width:62%;pointer-events:none}
+.rpill{background:rgba(20,17,16,.78);border:1px solid #3d372e;color:var(--lmuted);
+  font:600 10px var(--mono);padding:4px 9px;border-radius:6px;backdrop-filter:blur(3px)}
+.rpill b{color:var(--ltrace)}
+.lab-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));
+  gap:12px 22px;padding:16px;background:var(--lbg2);border-top:1px solid var(--lline)}
+.ctl{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ctl-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl-row label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--lmuted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctl-row .ctl-val{font:600 11px var(--mono);color:var(--ltrace);white-space:nowrap}
+.ctl select{height:30px;background:#141110;color:var(--ltext);border:1px solid #3d372e;
+  border-radius:7px;padding:0 8px;font:600 11px var(--mono)}
+
+/* ---------- Drop zone ---------- */
+.drop-zone{border:1px dashed #d6d3d1;background:var(--surface-soft);border-radius:var(--r);
+  padding:26px;text-align:center;transition:all .2s}
+.drop-zone.drag{border-color:var(--accent);background:#fffbeb}
+.drop-zone .big{font-size:26px}
+.drop-zone h3{font-size:13px;margin:8px 0 4px}
+.drop-zone p{font-size:11px;color:var(--muted)}
+.drop-actions{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ---------- Modal ---------- */
 .hidden{display:none!important}
-.no-results{padding:24px;text-align:center;color:var(--muted);font-size:12px}
-.modal{position:fixed;inset:0;background:rgba(12,23,36,.36);display:flex;align-items:center;justify-content:center;padding:18px;z-index:20}
-.modal-panel{width:min(960px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:12px;border:1px solid var(--line);box-shadow:0 18px 60px rgba(0,0,0,.18);padding:16px}
+.modal{position:fixed;inset:0;background:rgba(28,25,23,.45);display:flex;align-items:center;
+  justify-content:center;padding:18px;z-index:50}
+.modal-panel{width:min(880px,100%);max-height:86vh;overflow:auto;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--rl);box-shadow:0 24px 70px rgba(0,0,0,.25);padding:18px}
 .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.modal-head h3{margin:0;font-size:16px}
-.close{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 9px}
-textarea.csv{width:100%;height:250px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:10px}
-table{width:100%;border-collapse:collapse;font-size:11px}
-th,td{padding:7px 8px;border-bottom:1px solid var(--line2);white-space:nowrap;text-align:left}
-th{background:#f7f9fc;color:#5f6a76}
-.toast{position:fixed;right:16px;bottom:16px;background:#17202a;color:#fff;padding:9px 12px;border-radius:8px;font-size:11px;box-shadow:0 8px 30px rgba(0,0,0,.2);z-index:30}
-@media (max-width:900px){
- .layout{grid-template-columns:1fr}.sidebar{min-height:0}.calc-list{max-height:260px}
- .bottom{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(3,1fr)}
+.modal-head h3{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent-h);margin:0;font-weight:700}
+.map-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.mapf{display:flex;flex-direction:column;gap:5px;min-width:0}
+.mapf label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.mapf label small{color:var(--faint);text-transform:none;font-weight:400;letter-spacing:0}
+.mapf select{height:32px;border:1px solid var(--border);border-radius:var(--r);background:var(--surface);
+  font-family:var(--mono);font-size:12px;padding:0 8px}
+textarea.csv{width:100%;height:150px;resize:vertical;border:1px solid var(--border);border-radius:var(--r);
+  padding:8px 10px;font:11px var(--mono);color:var(--text);background:var(--surface)}
+
+/* ---------- Footer / toast ---------- */
+.footer{margin-top:24px;padding:16px 0;color:var(--muted);font-size:11px;
+  border-top:1px solid var(--border);text-align:center}
+.toast{position:fixed;right:20px;bottom:20px;z-index:60;background:#ecfdf5;color:#047857;
+  border:1px solid #a7f3d0;padding:10px 14px;border-radius:var(--r);font:600 11px var(--mono);
+  opacity:0;pointer-events:none;transform:translateY(5px);transition:.2s}
+.toast.show{opacity:1;transform:none}
+
+/* ---------- Responsive ---------- */
+@media(max-width:1000px){ .grid>[class*=span-]{grid-column:span 12} }
+@media(max-width:900px){
+  header{height:auto;min-height:64px;flex-wrap:wrap;padding:10px 16px;gap:10px}
+  .brand{min-width:0}
+  .tabs{order:3;width:100%;height:40px}
+  .tab{height:40px;padding-bottom:8px}
+  #layout{display:block}
+  aside{display:none}
+  main{padding:20px 16px 40px}
+  .grid{grid-template-columns:1fr}
+  .hero{align-items:flex-start;flex-direction:column}
+  .fields{grid-template-columns:1fr}
+  .field{grid-template-columns:98px 1fr 52px}
+  .field.no-unit{grid-template-columns:98px 1fr}
+  .formula-grid{grid-template-columns:1fr}
+  .lab-readouts{max-width:100%}
 }
-@media (max-width:600px){
- .app{padding:10px}.title-row{display:block}.badges{justify-content:flex-start;margin-top:10px}
- .form-grid{grid-template-columns:1fr}.result-grid{grid-template-columns:1fr 1fr}.metrics{grid-template-columns:1fr 1fr}
- .workspace{padding:12px}.sidebar{padding:10px}
- h1{font-size:21px}
+@media print{
+  header{position:static}
+  .tabs,.header-actions,aside,.actions,.lab-top,.lab-hint,.lab-controls,.toast,.modal,.drop-actions{display:none!important}
+  main{padding:0}
+  .pane{display:block!important}
+  .card{break-inside:avoid;box-shadow:none}
+  .lab-shell{box-shadow:none}
 }
 </style>
 </head>
 <body>
-<div class="app">
+
 <header>
-  <div class="title-row">
+  <div class="brand">
+    <div class="brand-mark">λ</div>
     <div>
-      <h1>Aznur IER Radioactivity Calculator</h1>
-      <p class="subtitle">Environmental radioactivity calculation toolkit for measurement, ecology, radiochemistry, aquatic systems and modeling.</p>
-    </div>
-    <div class="badges">
-      <span class="badge local">LOCAL-FIRST</span>
-      <span class="badge">NO LOGIN</span>
-      <span class="badge">SINGLE HTML</span>
+      <div class="brand-name">AZNUR IER</div>
+      <span class="brand-sub">ENVIRONMENTAL RADIOACTIVITY TOOLBOOK</span>
     </div>
   </div>
-  <div class="toolbar">
-    <div class="search-wrap">
-      <input id="search" type="search" placeholder="Search calculator, radionuclide, formula or keyword…">
-      <span class="search-icon">⌕</span>
-    </div>
-    <button class="primary" id="favBtn">★ Favorites</button>
-    <button id="showAllBtn">All calculators</button>
-    <button id="batchBtn">Batch CSV</button>
-    <button id="printBtn">Print</button>
+  <nav class="tabs" id="tabs" aria-label="Main sections">
+    <button class="tab on" data-pane="home">Overview</button>
+    <button class="tab" data-pane="radioactivity">Radioactivity</button>
+    <button class="tab" data-pane="measurement">Measurement</button>
+    <button class="tab" data-pane="environment">Environment</button>
+    <button class="tab" data-pane="transport">Transport</button>
+    <button class="tab" data-pane="modeling">Modeling</button>
+    <button class="tab" data-pane="chemistry">Radiochemistry</button>
+    <button class="tab" data-pane="exposure">Exposure</button>
+    <button class="tab" data-pane="analysis">Analysis</button>
+    <button class="tab" data-pane="visual">Visual Lab</button>
+    <button class="tab" data-pane="reference">Reference</button>
+  </nav>
+  <div class="header-actions">
+    <button class="mini" id="batchBtn">Batch CSV</button>
+    <button class="mini" id="exportBtn">Export</button>
+    <button class="mini" id="importBtn">Import</button>
+    <input type="file" id="importFile" accept=".json" hidden>
+    <button class="mini" id="resetBtn">Reset</button>
+    <button class="mini primary" id="printBtn">Print</button>
   </div>
-  <div class="category-bar" id="categories"></div>
 </header>
 
-<main>
-<div class="layout">
-  <aside class="sidebar">
-    <div class="sidebar-top"><div class="section-label">Calculators</div><div class="count" id="calcCount"></div></div>
-    <div class="calc-list" id="calcList"></div>
-  </aside>
-  <section class="workspace">
-    <div class="workspace-head">
-      <div>
-        <div class="crumb" id="crumb"></div>
-        <h2 id="calcTitle"></h2>
-        <p id="calcDesc"></p>
-      </div>
-      <div class="head-actions">
-        <button class="small-btn" id="favoriteCurrent">☆ Save</button>
-        <button class="small-btn" id="copyFormula">Copy formula</button>
-      </div>
-    </div>
-    <div id="formGrid" class="form-grid"></div>
-    <div class="runbar">
-      <button class="run" id="runBtn">Calculate</button>
-      <button class="reset" id="resetBtn">Reset</button>
-      <button class="reset" id="exportTxtBtn">Export TXT</button>
-    </div>
-    <div id="resultBox" class="result hidden"></div>
-    <div class="metrics">
-      <div class="metric"><b>Calculators</b><span id="mCalcs">0</span></div>
-      <div class="metric"><b>Completed</b><span id="mDone">0</span></div>
-      <div class="metric"><b>Favorites</b><span id="mFav">0</span></div>
-      <div class="metric"><b>Batch Rows</b><span id="mRows">0</span></div>
-      <div class="metric"><b>Status</b><span id="mStatus">Ready</span></div>
-    </div>
-  </section>
-</div>
+<div id="layout">
+<aside aria-label="Toolbook">
+  <div class="side-group">
+    <div class="side-head">Sections</div>
+    <button class="side-btn on" data-pane="home"><span>Overview</span><b>78</b></button>
+    <button class="side-btn" data-pane="radioactivity"><span>Radioactivity</span><b>11</b></button>
+    <button class="side-btn" data-pane="measurement"><span>Measurement</span><b>12</b></button>
+    <button class="side-btn" data-pane="environment"><span>Environment</span><b>09</b></button>
+    <button class="side-btn" data-pane="transport"><span>Transport</span><b>12</b></button>
+    <button class="side-btn" data-pane="modeling"><span>Modeling</span><b>10</b></button>
+    <button class="side-btn" data-pane="chemistry"><span>Radiochemistry</span><b>04</b></button>
+    <button class="side-btn" data-pane="exposure"><span>Exposure</span><b>05</b></button>
+    <button class="side-btn" data-pane="analysis"><span>Analysis</span><b>15</b></button>
+    <button class="side-btn" data-pane="visual"><span>Visual lab</span><b>N/A</b></button>
+    <button class="side-btn" data-pane="reference"><span>Reference</span><b>N/A</b></button>
+  </div>
+</aside>
 
-<div class="bottom">
-  <section class="drop-card">
-    <div class="drop-zone" id="dropZone">
-      <div class="big">📄</div>
-      <h3>Drop a CSV dataset here</h3>
-      <p>Run the active calculator against a table of samples without sending data anywhere.</p>
-      <div class="drop-actions">
-        <button class="small-btn" id="csvBrowse">Select CSV</button>
-        <input id="csvFile" type="file" accept=".csv,text/csv">
-        <button class="small-btn" id="csvPasteBtn">Paste CSV</button>
+<main>
+<div class="page">
+
+<!-- ============================ HOME ============================ -->
+<section class="pane on" id="pane-home">
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Environmental Radioactivity Toolbook</h1>
+      <p>Decay, counting statistics, MDA, soil inventories, river loads, compartment models, transfer factors, exposure and a live radioactivity laboratory. Calculations and saved settings stay on your device.</p>
+    </div>
+    <div class="tag">78 TOOLS · SINGLE FILE · LOCAL-FIRST</div>
+  </div>
+  <div class="grid">
+    <div class="card span-7 accent">
+      <h2>Find a tool</h2>
+      <div class="search">
+        <input id="toolSearch" placeholder="Search: decay, MDA, Kd, Poisson, Ci, inventory, Bateman…" aria-label="Search calculators">
+        <button class="mini" id="favOnly">★ Favorites</button>
+        <button class="mini" id="clearSearch">Clear</button>
+      </div>
+      <div class="note" id="searchCount" style="margin:-4px 0 10px">78 shown</div>
+      <div id="toolList" class="list"></div>
+    </div>
+    <div class="card span-5">
+      <h2>Standard Constants</h2>
+      <div class="results">
+        <div class="stat"><div class="k">ln 2</div><div class="v">0.693147<span class="u"> none</span></div></div>
+        <div class="stat"><div class="k">Curie</div><div class="v">3.7×10¹⁰<span class="u"> Bq</span></div></div>
+        <div class="stat"><div class="k">Avogadro</div><div class="v">6.0221408×10²³<span class="u"> /mol</span></div></div>
+        <div class="stat"><div class="k">1 eV</div><div class="v">1.6021766×10⁻¹⁹<span class="u"> J</span></div></div>
+        <div class="stat"><div class="k">Becquerel</div><div class="v">1<span class="u"> s⁻¹</span></div></div>
+        <div class="stat"><div class="k">1 year</div><div class="v">3.15576×10⁷<span class="u"> s</span></div></div>
+      </div>
+      <div class="formula"><b>A = λN</b> · <b>λ = ln2/T½</b> · <b>u(N) = √N</b> · <b>I = I₀e^(−μx)</b></div>
+    </div>
+    <div class="card span-6 accent" id="tool-qk1">
+      <h2>Quick Decay Check</h2>
+      <div class="fields">
+        <div class="field"><label>Activity A₀</label><input id="qk1_a0" type="number" step="any" value="1000"><span class="unit">Bq</span></div>
+        <div class="field"><label>Elapsed t</label><input id="qk1_t" type="number" step="any" value="10"><span class="unit">years</span></div>
+        <div class="field full"><label>Half-life T½</label><input id="qk1_h" type="number" step="any" value="30.05"><span class="unit">years</span></div>
+      </div>
+      <div class="actions"><button class="btn primary" id="qk1_run">Calculate</button></div>
+      <div class="results" id="qk1_out" aria-live="polite"></div>
+      <div class="formula"><b>A(t) = A₀ · 2^(−t/T½)</b></div>
+    </div>
+    <div class="card span-6" id="tool-qk2">
+      <h2>Quick Concentration Check</h2>
+      <div class="fields">
+        <div class="field"><label>Activity A</label><input id="qk2_a" type="number" step="any" value="1000"><span class="unit">Bq</span></div>
+        <div class="field full"><label>Sample mass m</label><input id="qk2_m" type="number" step="any" value="0.5"><span class="unit">kg</span></div>
+      </div>
+      <div class="actions"><button class="btn primary" id="qk2_run">Calculate</button></div>
+      <div class="results" id="qk2_out" aria-live="polite"></div>
+      <div class="formula"><b>C = A / m</b></div>
+    </div>
+    <div class="card span-7">
+      <h2>Batch CSV <small>run any calculator over a dataset</small></h2>
+      <div class="drop-zone" id="dropZone">
+        <div class="big">☢</div>
+        <h3>Drop a CSV dataset here</h3>
+        <p>Map columns to inputs and run any calculator across every row. Nothing leaves your device.</p>
+        <div class="drop-actions">
+          <button class="btn" id="csvBrowse">Select CSV</button>
+          <button class="btn" id="csvPasteBtn">Paste CSV</button>
+        </div>
+        <input type="file" id="csvFile" accept=".csv,text/csv" hidden>
       </div>
     </div>
-  </section>
-  <section class="info-card">
-    <div class="card-title">Calculator notes</div>
-    <ul class="info-list" id="infoList"></ul>
-  </section>
+    <div class="card span-5">
+      <h2>Session</h2>
+      <div class="results">
+        <div class="stat"><div class="k">Calculators</div><div class="v" id="mCalcs">0</div></div>
+        <div class="stat"><div class="k">Completed</div><div class="v" id="mDone">0</div></div>
+        <div class="stat"><div class="k">Favorites</div><div class="v" id="mFav">0</div></div>
+        <div class="stat"><div class="k">Batch rows</div><div class="v" id="mRows">0</div></div>
+        <div class="stat"><div class="k">Status</div><div class="v" id="mStatus">Ready</div></div>
+      </div>
+      <ul class="note-list">
+        <li>Verify equations, constants and SOPs against authoritative sources before reporting.</li>
+        <li>Use compatible units throughout each calculation.</li>
+        <li>Favorites, inputs and history are stored locally in this browser.</li>
+      </ul>
+    </div>
+    <div class="card span-12">
+      <h2>Scope</h2>
+      <div class="notice">Calculators implement standard textbook relations: exponential decay, Poisson counting statistics, simplified MDA, ideal mixing, first-order compartment models and approximate attenuation data. Nuclide data and coefficients are approximations intended for education, coursework and screening. They are not certified dosimetry or regulatory reporting.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RADIOACTIVITY ============================ -->
+<section class="pane" id="pane-radioactivity">
+  <div class="hero">
+    <div class="hero-text"><h1>Radioactivity &amp; Units</h1><p>The decay law, half-life, decay constant, atom inventories, reference-date corrections and activity/energy unit conversions.</p></div>
+    <div class="tag">A = λN</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ MEASUREMENT ============================ -->
+<section class="pane" id="pane-measurement">
+  <div class="hero">
+    <div class="hero-text"><h1>Measurement &amp; Detection Limits</h1><p>Counting statistics, efficiency, dead time, gamma spectrometry, QC checks and MDA-style detection thresholds.</p></div>
+    <div class="tag">u(N) = √N</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ ENVIRONMENT ============================ -->
+<section class="pane" id="pane-environment">
+  <div class="hero">
+    <div class="hero-text"><h1>Environmental Metrics</h1><p>Dry/wet bases, moisture, density and porosity, soil inventories and solid/water distribution coefficients.</p></div>
+    <div class="tag">I = C·ρ·d</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ TRANSPORT ============================ -->
+<section class="pane" id="pane-transport">
+  <div class="hero">
+    <div class="hero-text"><h1>Transport &amp; Pathways</h1><p>Rivers, lakes, oceans and the atmosphere: discharge, radionuclide loads, mixing, dilution, deposition and travel time.</p></div>
+    <div class="tag">F = C·Q</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ MODELING ============================ -->
+<section class="pane" id="pane-modeling">
+  <div class="hero">
+    <div class="hero-text"><h1>Modeling &amp; Ecology</h1><p>First-order kinetics, compartment models, ecological half-lives and organism transfer factors.</p></div>
+    <div class="tag">dC/dt</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ CHEMISTRY ============================ -->
+<section class="pane" id="pane-chemistry">
+  <div class="hero">
+    <div class="hero-text"><h1>Radiochemistry</h1><p>Sorption, desorption, chemical recovery and combined yields.</p></div>
+    <div class="tag">Kd · YIELD</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ EXPOSURE ============================ -->
+<section class="pane" id="pane-exposure">
+  <div class="hero">
+    <div class="hero-text"><h1>Exposure</h1><p>Activity intake via food, water and inhalation, plus simple dose estimates using supplied coefficients.</p></div>
+    <div class="tag">I = C·rate·t</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ ANALYSIS ============================ -->
+<section class="pane" id="pane-analysis">
+  <div class="hero">
+    <div class="hero-text"><h1>Data Analysis</h1><p>Summary statistics, uncertainty, confidence intervals, regression, geospatial helpers and sampling design.</p></div>
+    <div class="tag">1.96σ</div>
+  </div>
+  <div class="grid"></div>
+</section>
+
+<!-- ============================ VISUAL LAB ============================ -->
+<section class="pane" id="pane-visual">
+  <div class="hero">
+    <div class="hero-text"><h1>Radioactivity Visual Lab</h1><p>Interactive canvas experiments: decay curves, photon shielding, counting statistics, γ-spectra and Bateman chains. Hover the stage for live readouts.</p></div>
+    <div class="tag">LIVE · CANVAS · LOCAL</div>
+  </div>
+  <div class="lab-shell">
+    <div class="lab-top">
+      <div class="lab-modes">
+        <button class="lab-mode on" data-mode="decay">Decay curve</button>
+        <button class="lab-mode" data-mode="shield">Shielding</button>
+        <button class="lab-mode" data-mode="count">Counting stats</button>
+        <button class="lab-mode" data-mode="spectrum">γ Spectrum</button>
+        <button class="lab-mode" data-mode="chain">Decay chain</button>
+      </div>
+      <div class="lab-transport">
+        <button class="lab-btn" id="labPlay" title="Pause / resume">⏸</button>
+        <button class="lab-btn" id="labReset" title="Reset experiment">↺</button>
+        <div class="lab-speed"><input type="range" id="labSpeed" min="0.1" max="5" step="0.1" value="1"><span id="labSpeedVal">1.0×</span></div>
+      </div>
+    </div>
+    <div class="lab-hint" id="labHint"></div>
+    <div class="lab-stage">
+      <canvas id="labCanvas"></canvas>
+      <div class="lab-readouts" id="labRead"></div>
+    </div>
+    <div class="lab-controls" id="labControls"></div>
+  </div>
+</section>
+
+<!-- ============================ REFERENCE ============================ -->
+<section class="pane" id="pane-reference">
+  <div class="hero">
+    <div class="hero-text"><h1>Reference</h1><p>Core formulas, physical constants and a nuclide half-life table for quick checking.</p></div>
+    <div class="tag">FORMULAS · CONSTANTS · NUCLIDES</div>
+  </div>
+  <div class="grid">
+    <div class="card span-12">
+      <h2>Core formulas</h2>
+      <div class="formula-grid">
+        <div class="ftile"><h3>Decay law</h3><code>A(t) = A₀ · 2^(−t/T½)</code></div>
+        <div class="ftile"><h3>Activity</h3><code>A = λN,  λ = ln2 / T½</code></div>
+        <div class="ftile"><h3>Counting</h3><code>R = N / t,  u(N) ≈ √N</code></div>
+        <div class="ftile"><h3>Efficiency</h3><code>ε = R / (A · p)</code></div>
+        <div class="ftile"><h3>Activity concentration</h3><code>C = N / (t · ε · p · m)</code></div>
+        <div class="ftile"><h3>MDA (simplified)</h3><code>MDA ≈ k·√N_b / (t · ε · p · m)</code></div>
+        <div class="ftile"><h3>Attenuation</h3><code>I = I₀ e^(−μx),  HVL = ln2/μ</code></div>
+        <div class="ftile"><h3>Distribution coefficient</h3><code>Kd = C_solid / C_water</code></div>
+        <div class="ftile"><h3>Soil inventory</h3><code>I = C · ρ_b · d</code></div>
+        <div class="ftile"><h3>Riverine flux</h3><code>F = C · Q</code></div>
+        <div class="ftile"><h3>Intake</h3><code>I = C · consumption · time</code></div>
+        <div class="ftile"><h3>Bateman chain</h3><code>Nᵢ = Σⱼ e^(−λⱼt) Π λₖ/(λₖ−λⱼ)</code></div>
+      </div>
+    </div>
+    <div class="card span-6">
+      <h2>Nuclide half-lives</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th class="l">Nuclide</th><th class="l">Half-life</th><th class="l">Mode</th><th class="l">Key γ (keV)</th></tr></thead>
+          <tbody>
+            <tr><td class="l">H-3</td><td class="l">12.32 y</td><td class="l">β⁻</td><td class="l">N/A</td></tr>
+            <tr><td class="l">C-14</td><td class="l">5700 y</td><td class="l">β⁻</td><td class="l">N/A</td></tr>
+            <tr><td class="l">K-40</td><td class="l">1.248×10⁹ y</td><td class="l">β⁻ / EC</td><td class="l">1461</td></tr>
+            <tr><td class="l">Co-60</td><td class="l">5.27 y</td><td class="l">β⁻</td><td class="l">1173, 1332</td></tr>
+            <tr><td class="l">Sr-90</td><td class="l">28.79 y</td><td class="l">β⁻</td><td class="l">N/A</td></tr>
+            <tr><td class="l">Y-90</td><td class="l">2.67 d</td><td class="l">β⁻</td><td class="l">N/A</td></tr>
+            <tr><td class="l">I-131</td><td class="l">8.02 d</td><td class="l">β⁻</td><td class="l">364</td></tr>
+            <tr><td class="l">Cs-137</td><td class="l">30.05 y</td><td class="l">β⁻</td><td class="l">662 (Ba-137m)</td></tr>
+            <tr><td class="l">Ba-137m</td><td class="l">2.55 min</td><td class="l">IT</td><td class="l">662</td></tr>
+            <tr><td class="l">Pb-210</td><td class="l">22.2 y</td><td class="l">β⁻</td><td class="l">46.5</td></tr>
+            <tr><td class="l">Ra-226</td><td class="l">1600 y</td><td class="l">α</td><td class="l">186</td></tr>
+            <tr><td class="l">Rn-222</td><td class="l">3.82 d</td><td class="l">α</td><td class="l">N/A</td></tr>
+            <tr><td class="l">Am-241</td><td class="l">432.2 y</td><td class="l">α</td><td class="l">59.5</td></tr>
+            <tr><td class="l">Pu-239</td><td class="l">2.41×10⁴ y</td><td class="l">α</td><td class="l">N/A</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">Values are rounded reference figures. Always confirm against current evaluated nuclear data before reporting.</div>
+    </div>
+    <div class="card span-6">
+      <h2>Constants &amp; conversions</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th class="l">Quantity</th><th class="l">Value</th></tr></thead>
+          <tbody>
+            <tr><td class="l">Avogadro N<sub>A</sub></td><td class="l">6.02214076×10²³ mol⁻¹</td></tr>
+            <tr><td class="l">Elementary charge e</td><td class="l">1.602176634×10⁻¹⁹ C</td></tr>
+            <tr><td class="l">1 eV</td><td class="l">1.602176634×10⁻¹⁹ J</td></tr>
+            <tr><td class="l">1 Ci</td><td class="l">3.7×10¹⁰ Bq</td></tr>
+            <tr><td class="l">1 Bq</td><td class="l">1 s⁻¹</td></tr>
+            <tr><td class="l">ln 2</td><td class="l">0.6931472</td></tr>
+            <tr><td class="l">1 year (Julian)</td><td class="l">365.25 d = 3.15576×10⁷ s</td></tr>
+            <tr><td class="l">1 Gy</td><td class="l">1 J/kg</td></tr>
+            <tr><td class="l">Electron rest energy</td><td class="l">0.511 MeV</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">Pair the constants with the Visual Lab: the shielding experiment uses the 0.511 MeV electron rest energy for its Compton geometry.</div>
+    </div>
+  </div>
+</section>
+
 </div>
 </main>
-
-<footer>
-  Aznur IER Radioactivity Calculator · Calculations are intended for educational/research use. Verify equations, constants, SOPs and regulatory requirements against authoritative sources before reporting results.
-</footer>
 </div>
 
+<footer class="footer">AZNUR IER · offline single-file toolbook. Calculations are for education and screening; verify against authoritative sources before reporting results.</footer>
+
+<!-- ============================ BATCH MODAL ============================ -->
 <div id="batchModal" class="modal hidden">
   <div class="modal-panel">
-    <div class="modal-head"><h3>Batch CSV Calculator</h3><button class="close" id="closeModal">Close</button></div>
-    <p id="batchHelp" class="subtitle"></p>
-    <div id="batchMap" class="form-grid"></div>
-    <div class="runbar"><button class="run" id="runBatch">Run batch</button><button class="reset" id="downloadBatch">Download CSV</button></div>
-    <div class="table-wrap hidden" id="batchTableWrap"><table><thead id="batchHead"></thead><tbody id="batchBody"></tbody></table></div>
+    <div class="modal-head"><h3>Batch CSV Calculator</h3><button class="mini" id="closeModal">Close</button></div>
+    <p class="desc">Choose a calculator, load a CSV (drop it on the Overview pane or paste below), map columns to inputs, then run the batch. Everything stays on this device.</p>
+    <div class="mapf" style="margin:12px 0"><label>Calculator</label><select id="batchCalc"></select></div>
+    <div id="batchSource">
+      <div class="mapf"><label>Paste CSV <small>first row = header</small></label><textarea id="csvText" class="csv" placeholder="activity_Bq,mass_kg&#10;1000,0.5&#10;1500,0.8"></textarea></div>
+      <div class="actions" style="margin-top:10px"><button class="btn primary" id="loadPaste">Load pasted CSV</button></div>
+    </div>
+    <div id="batchReady" class="hidden">
+      <div class="note" id="batchInfo"></div>
+      <div id="batchMap" class="map-grid" style="margin-top:10px"></div>
+      <div class="actions" style="margin-top:12px"><button class="btn primary" id="runBatch">Run batch</button><button class="btn" id="downloadBatch">Download CSV</button></div>
+      <div class="table-scroll hidden" id="batchTableWrap" style="margin-top:12px"><table><thead id="batchHead"></thead><tbody id="batchBody"></tbody></table></div>
+    </div>
   </div>
 </div>
-<div id="toast" class="toast hidden"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 'use strict';
 
-const A = (id,title,category,desc,inputs,formula,notes,fn,aliases=[]) => ({id,title,category,desc,inputs,formula,notes,fn,aliases});
-const N = (id,label,unit='',def='',help='') => ({id,label,type:'number',unit,def,help});
-const S = (id,label,options,def,help='') => ({id,label,type:'select',options,def,help});
+/* ============================================================
+   Calculator registry. Math preserved, presentation refined.
+   ============================================================ */
+const A=(id,title,category,desc,inputs,formula,notes,fn,aliases=[])=>({id,title,category,desc,inputs,formula,notes,fn,aliases});
+const N=(id,label,unit='',def='',help='')=>({id,label,type:'number',unit,def,help});
+const S=(id,label,options,def,help='')=>({id,label,type:'select',options,def,help});
 
-const calculators = [
+const calculators=[
 A('decay','Radioactive Decay','Radioactivity','Remaining activity after a known elapsed time.',
  [N('a0','Initial activity','Bq','1000'),N('t','Elapsed time','years','10'),N('half','Half-life','years','30.05')],
  'A(t) = A₀ × 2^(-t / T½)','Closed system; no new source or biological removal is included.',
@@ -293,7 +687,7 @@ A('countingUncertainty','Poisson counting uncertainty','Measurement','Estimate c
  v=>out('Standard uncertainty',Math.sqrt(v.counts),'counts',[kv('Relative uncertainty',Math.sqrt(v.counts)/v.counts*100,'%')]),['poisson','counting statistics']),
 A('efficiency','Detector efficiency','Measurement','Calculate absolute efficiency from observed rate and known activity/emission probability.',
  [N('rate','Net count rate','cps','100'),N('activity','Source activity','Bq','10000'),N('p','Emission probability','fraction','0.85')],
- 'ε = R / (A × p)','Use p as a fraction (0–1), not percent.',
+ 'ε = R / (A × p)','Use p as a fraction from 0 to 1, not percent.',
  v=>out('Absolute efficiency',v.rate/(v.activity*v.p),'fraction',[kv('Efficiency',v.rate/(v.activity*v.p)*100,'%')]),['gamma efficiency']),
 A('activityFromCps','Activity from count rate','Measurement','Calculate activity from count rate, efficiency and emission probability.',
  [N('rate','Net count rate','cps','100'),N('eff','Detector efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85')],
@@ -310,11 +704,11 @@ A('deadtime','Dead-time correction','Measurement','Correct observed count rate u
 A('mdaCurrie','MDA / critical limit (simplified)','MDA','Estimate an MDA-style detection threshold from background count statistics.',
  [N('background','Background counts','counts','1200'),N('time','Counting time','s','3600'),N('eff','Efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85'),N('mass','Sample mass','kg','0.5'),N('k','Decision factor k','dimensionless','1.645')],
  'MDA ≈ (k × √Nb) / (t × ε × p × m)','Screening/educational formula; apply your laboratory’s validated MDA method for reporting.',
- v=>out('Approx. MDA',v.k*Math.sqrt(v.background)/(v.time*v.eff*v.p*v.mass),'Bq/kg',['kv','Approx. decision factor',v.k]),['mda','minimum detectable activity','detection limit']),
+ v=>out('Approx. MDA',v.k*Math.sqrt(v.background)/(v.time*v.eff*v.p*v.mass),'Bq/kg',[kv('Decision factor k',v.k)]),['mda','minimum detectable activity','detection limit']),
 A('requiredCounting','Required counting time for target MDA','MDA','Approximate counting time needed to reach a target MDA.',
- [N('backgroundRate','Background rate','cps','0.2'),N('target','Target MDA','Bq/kg','1'),N('eff','Efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85'),N('mass','Sample mass','kg','0.5'),N('k','Decision factor','dimensionless','1.645')],
+ [N('backgroundRate','Background rate','cps','0.2'),N('target','Target MDA','Bq/kg','1'),N('eff','Efficiency','fraction','0.20'),N('p','Emission probability','fraction','0.85'),N('mass','Sample mass','kg','0.5'),N('k','Decision factor k','dimensionless','1.645')],
  't ≈ k² × Rb / (MDA² × ε² × p² × m²)','Simplified relation for planning only.',
- v=>out('Approx. counting time',v.k*v.k*v.backgroundRate/(v.target*v.target*v.eff*v.eff*v.p*v.p*v.mass*v.mass),'s',[kv('Hours',v.k*v.k*v.backgroundRate/(v.target*v.target*v.eff*v.eff*v.p*v.p*v.mass*v.mass)/3600,'h')]),['counting time','mda']),
+ v=>{const t=v.k*v.k*v.backgroundRate/(v.target*v.target*v.eff*v.eff*v.p*v.p*v.mass*v.mass);return out('Approx. counting time',t,'s',[kv('Hours',t/3600,'h')])},['counting time','mda']),
 A('dryWet','Dry-weight concentration','Environment','Convert wet-basis concentration to dry basis using moisture or dry fraction.',
  [N('cWet','Wet-basis concentration','Bq/kg wet','100'),N('dryFrac','Dry mass fraction','fraction','0.25')],
  'Cdry = Cwet / dry fraction','Dry fraction must be between 0 and 1.',
@@ -398,7 +792,7 @@ A('deposition','Deposition flux','Atmosphere','Calculate deposition flux from ai
 A('washout','Washout / scavenging ratio','Atmosphere','Calculate a simple washout ratio.',
  [N('rain','Rainwater concentration','Bq/L','100'),N('air','Air concentration','Bq/m³','0.1')],
  'W = Crain / Cair','Units must be consistent with the intended definition; this result is dimensional if inputs are not normalized.',
- v=>out('Washout ratio',v.rain/v.air),'[' + 'ratio' + ']',['wet deposition','scavenging']),
+ v=>out('Washout ratio',v.rain/v.air,'ratio'),['wet deposition','scavenging']),
 A('windTravel','Wind travel time','Atmosphere','Estimate travel time over a horizontal distance.',
  [N('distance','Distance','km','50'),N('wind','Wind speed','m/s','5')],
  't = distance / wind speed','Assumes straight, uniform transport.',
@@ -414,7 +808,7 @@ A('compartment','One-compartment continuous input model','Modeling','Solve a fir
 A('twoCompartment','Two-compartment steady state','Modeling','Solve a simple two-compartment steady-state linear exchange model.',
  [N('input','Input to A','Bq/day','1000'),N('kA','Loss from A','1/day','0.1'),N('kAB','A→B exchange','1/day','0.05'),N('kB','Loss from B','1/day','0.02'),N('kBA','B→A exchange','1/day','0.01')],
  '0 = I − (kA+kAB)A + kBA B; 0 = kAB A − (kB+kBA)B','Linear two-compartment steady state.',
- v=>{const Acoef=v.kA+v.kAB, Bcoef=v.kB+v.kBA; const B=v.kAB*v.input/(Acoef*Bcoef-v.kBA*v.kAB); const A=(v.input+v.kBA*B)/Acoef;return out('Compartment A',A,'Bq',[kv('Compartment B',B,'Bq')])},['two compartment']),
+ v=>{const Ac=v.kA+v.kAB,Bc=v.kB+v.kBA;const B=v.kAB*v.input/(Ac*Bc-v.kBA*v.kAB);const AA=(v.input+v.kBA*B)/Ac;return out('Compartment A',AA,'Bq',[kv('Compartment B',B,'Bq')])},['two compartment']),
 A('steadyState','Steady-state one-compartment amount','Modeling','Calculate steady-state amount from constant input and first-order loss.',
  [N('input','Input','Bq/day','1000'),N('k','Loss constant','1/day','0.05')],
  'C∞ = Input / k','Steady state only applies to a linear first-order model.',
@@ -549,172 +943,602 @@ A('simpleFlux','Areal flux','Environment','Calculate flux from areal rate and ar
  v=>out('Total areal load',v.rate*v.area,'Bq/day'),['flux','areal flux'])
 ];
 
+/* ---------- helpers ---------- */
 const fmt=x=>{
-  if(typeof x==='string') return x;
-  if(!Number.isFinite(x)) return '—';
+  if(typeof x==='string')return x;
+  if(!Number.isFinite(x))return 'N/A';
   const ax=Math.abs(x);
-  if(ax!==0 && (ax>=1e6 || ax<1e-4)) return x.toExponential(6);
-  return Number(x.toFixed(8)).toLocaleString(undefined,{maximumFractionDigits:8});
+  if(ax!==0&&(ax>=1e6||ax<1e-4))return x.toExponential(4);
+  return Number(x.toFixed(6)).toLocaleString(undefined,{maximumFractionDigits:6});
 };
 const kv=(label,value,unit='')=>({label,value,unit});
 const out=(label,value,unit='',extra=[])=>({label,value,unit,extra:Array.isArray(extra)?extra:[]});
-for(const c of calculators){ if(!c.notes)c.notes=[]; }
-
-const categories=['All','Radioactivity','Units','Measurement','MDA','Environment','Rivers & Lakes','Ocean / Water','Atmosphere','Modeling','Ecology','Exposure','Radiochemistry','Statistics','Geospatial','Sampling'];
-const state={category:'All',query:'',favorites:new Set(JSON.parse(localStorage.getItem('aznur_ier_favs')||'[]')),done:Number(localStorage.getItem('aznur_ier_done')||0),rows:0,current:'decay',lastResult:null,batch:null};
-
 const $=id=>document.getElementById(id);
-function saveState(){localStorage.setItem('aznur_ier_favs',JSON.stringify([...state.favorites]));localStorage.setItem('aznur_ier_done',String(state.done));}
-function toast(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.add('hidden'),1800)}
-function showCategories(){
-  $('categories').innerHTML=categories.map(x=>`<button class="chip ${state.category===x?'active':''}" data-cat="${x}">${x}</button>`).join('');
-  $('categories').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{state.category=b.dataset.cat;renderList();showCategories()});
-}
-function visibleCalcs(){
-  let list=calculators;
-  if(state.category!=='All') list=list.filter(c=>c.category===state.category);
-  const q=state.query.trim().toLowerCase();
-  if(q) list=list.filter(c=>(c.title+' '+c.category+' '+c.desc+' '+c.formula+' '+c.aliases.join(' ')).toLowerCase().includes(q));
-  if(state.favoriteOnly) list=list.filter(c=>state.favorites.has(c.id));
-  return list;
-}
-function renderList(){
-  const list=visibleCalcs();
-  $('calcCount').textContent=`${list.length} shown`;
-  $('calcList').innerHTML=list.length?list.map(c=>`<button class="calc-item ${state.current===c.id?'active':''}" data-id="${c.id}"><strong>${state.favorites.has(c.id)?'★ ':''}${c.title}</strong><span>${c.category} · ${c.desc}</span></button>`).join(''):`<div class="no-results">No calculator matches the current search/filter.</div>`;
-  $('calcList').querySelectorAll('.calc-item').forEach(b=>b.onclick=()=>selectCalc(b.dataset.id));
-  $('mCalcs').textContent=calculators.length;
-  $('mDone').textContent=state.done;
-  $('mFav').textContent=state.favorites.size;
-}
-function selectCalc(id){
-  state.current=id; state.lastResult=null; const c=calculators.find(x=>x.id===id);
-  $('crumb').textContent=c.category;
-  $('calcTitle').textContent=c.title;
-  $('calcDesc').textContent=c.desc;
-  $('formGrid').innerHTML=c.inputs.map(i=>{
-    if(i.type==='select'){
-      return `<div class="field"><label>${i.label}</label><select id="in_${i.id}">${i.options.map(o=>`<option ${o===i.def?'selected':''}>${o}</option>`).join('')}</select>${i.help?`<div class="help">${i.help}</div>`:''}</div>`;
-    }
-    return `<div class="field"><label>${i.label}</label><div class="field-row"><input id="in_${i.id}" type="number" step="any" value="${i.def}"><input class="unit" disabled value="${i.unit}"></div>${i.help?`<div class="help">${i.help}</div>`:''}</div>`;
-  }).join('');
-  $('favoriteCurrent').textContent=state.favorites.has(c.id)?'★ Saved':'☆ Save';
-  $('resultBox').classList.add('hidden');
-  $('infoList').innerHTML=[c.notes, 'Use compatible units throughout the calculation.', 'Verify your laboratory SOP, method validation and authoritative reference values before reporting results.'].flat().map(x=>`<li>${x}</li>`).join('');
-  renderList();
-}
-function getValues(c){
-  const v={};
-  for(const i of c.inputs){
-    const el=$('in_'+i.id);
-    if(i.type==='select') v[i.id]=el.value;
-    else {const n=Number(el.value); if(!Number.isFinite(n)) throw new Error(`Enter a valid value for "${i.label}".`); v[i.id]=n;}
-  }
-  return v;
-}
-function renderResult(r,c){
-  state.lastResult=r;
-  const extras=r.extra||[];
-  $('resultBox').innerHTML=`
-    <div class="result-head"><h3>Result</h3><span class="badge">Computed locally</span></div>
-    <div><span class="result-value">${typeof r.value==='number'?fmt(r.value):r.value}</span><span class="result-unit">${r.unit||''}</span></div>
-    <div class="result-sub">${r.label}</div>
-    ${extras.length?`<div class="result-grid">${extras.map(x=>`<div class="result-kv"><b>${x.label}</b><span>${typeof x.value==='number'?fmt(x.value):x.value} ${x.unit||''}</span></div>`).join('')}</div>`:''}
-    <div class="equation"><div class="eq-title">Equation</div><div class="eq">${c.formula}</div></div>
-    <div class="notes"><div class="eq-title">Notes</div><p>${c.notes}</p><p>Result generated: ${new Date().toLocaleString()}</p></div>`;
-  $('resultBox').classList.remove('hidden');
-}
-function calculate(){
-  const c=calculators.find(x=>x.id===state.current);
-  try{
-    const v=getValues(c); const r=c.fn(v); renderResult(r,c); state.done++; saveState(); $('mDone').textContent=state.done; $('mStatus').textContent='Calculated'; toast('Calculation complete');
-  }catch(e){toast(e.message)}
-}
-$('runBtn').onclick=calculate;
-$('resetBtn').onclick=()=>selectCalc(state.current);
-$('search').oninput=e=>{state.query=e.target.value;renderList()};
-$('showAllBtn').onclick=()=>{state.category='All';state.query='';$('search').value='';state.favoriteOnly=false;showCategories();renderList()};
-$('favBtn').onclick=()=>{state.favoriteOnly=!state.favoriteOnly; $('favBtn').textContent=state.favoriteOnly?'★ All favorites':'★ Favorites'; renderList()};
-$('favoriteCurrent').onclick=()=>{const id=state.current;if(state.favorites.has(id))state.favorites.delete(id);else state.favorites.add(id);saveState();selectCalc(id)};
-$('copyFormula').onclick=async()=>{const c=calculators.find(x=>x.id===state.current);try{await navigator.clipboard.writeText(c.formula);toast('Formula copied')}catch{toast('Clipboard unavailable')}};
-$('exportTxtBtn').onclick=()=>{
- const c=calculators.find(x=>x.id===state.current);
- if(!state.lastResult){toast('Calculate first');return}
- const r=state.lastResult;
- const txt=`Aznur IER Radioactivity Calculator\n${c.title}\nCategory: ${c.category}\n\nResult: ${r.label}\nValue: ${typeof r.value==='number'?r.value:r.value} ${r.unit||''}\n\nEquation:\n${c.formula}\n\nNotes:\n${c.notes}\n\nGenerated: ${new Date().toISOString()}\n`;
- downloadBlob(txt,`aznur-ier-${c.id}.txt`,'text/plain');
-};
-$('printBtn').onclick=()=>window.print();
-function downloadBlob(content,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+const byId=id=>calculators.find(c=>c.id===id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const st=(k,v,u,cls)=>`<div class="stat${cls?' '+cls:''}"><div class="k">${esc(k)}</div><div class="v">${fmt(v)}${u?` <span class="u">${esc(u)}</span>`:''}</div></div>`;
+const errStat=(el,msg)=>{el.innerHTML=`<div class="stat wide bad"><div class="k">Error</div><div class="v">${esc(msg)}</div></div>`};
+const flash=card=>{card.classList.remove('flash');void card.offsetWidth;card.classList.add('flash')};
 
-$('csvBrowse').onclick=()=>{$('csvFile').click()};
-$('csvFile').onchange=e=>{if(e.target.files[0])readCSVFile(e.target.files[0])};
-$('dropZone').ondragover=e=>{e.preventDefault();$('dropZone').style.background='#f0f7ff'};
-$('dropZone').ondragleave=()=>{$('dropZone').style.background='#fbfcfe'};
-$('dropZone').ondrop=e=>{e.preventDefault();$('dropZone').style.background='#fbfcfe';const f=e.dataTransfer.files[0];if(f)readCSVFile(f)};
-$('csvPasteBtn').onclick=()=>{openBatch('');};
-function readCSVFile(file){const r=new FileReader();r.onload=()=>openBatch(r.result);r.readAsText(file)}
-function parseCSV(text){
-  const rows=[];let row=[],cell='',q=false;
-  for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];if(ch==='"'){if(q&&nx==='"'){cell+='"';i++}else q=!q}
-    else if(ch===','&&!q){row.push(cell);cell=''}
-    else if((ch==='\\n'||ch==='\\r')&&!q){if(ch==='\\r'&&nx==='\\n')i++;row.push(cell);if(row.some(x=>x!==''))rows.push(row);row=[];cell=''}else cell+='';}
-  if(cell!==''||row.length){row.push(cell);rows.push(row)}
-  return rows;
-}
-let csvRows=[];
-function openBatch(text){
-  $('batchModal').classList.remove('hidden');
-  if(!text){$('batchHelp').textContent='Paste or upload CSV data, then map headers to the active calculator inputs.';$('batchMap').innerHTML=`<textarea class="csv" id="pasteArea" placeholder="Sample,Cps,Mass\nS001,1000,0.5\nS002,800,0.4"></textarea>`; $('runBatch').onclick=()=>{const t=$('pasteArea').value;csvRows=parseCSV(t);buildBatchMap();};return}
-  csvRows=parseCSV(text);buildBatchMap();
-}
-function buildBatchMap(){
-  if(!csvRows.length)return;
-  const headers=csvRows[0];
-  const c=calculators.find(x=>x.id===state.current);
-  $('batchHelp').textContent=`Active calculator: ${c.title}. Choose which CSV column supplies each numeric input.`;
-  $('batchMap').innerHTML=c.inputs.map(i=>{
-    const options=['(skip)',...headers];
-    return `<div class="field"><label>${i.label}</label><select data-map="${i.id}">${options.map((o,idx)=>`<option ${idx===0?'selected':''}>${o}</option>`).join('')}</select></div>`;
-  }).join('');
-  $('runBatch').onclick=runBatch;
-}
-function runBatch(){
-  const c=calculators.find(x=>x.id===state.current), headers=csvRows[0], maps={};
-  document.querySelectorAll('[data-map]').forEach(s=>maps[s.dataset.map]=s.value);
-  const body=[];
-  for(let r=1;r<csvRows.length;r++){
-    const obj={}; c.inputs.forEach(i=>{if(i.type==='select')obj[i.id]=i.def;else{const h=maps[i.id];obj[i.id]=h==='(skip)'||!h?Number(i.def):Number(rIndex(r,h));}});
-    try{const result=c.fn(obj);body.push({row:r,values:[...r.map((x)=>x),typeof result.value==='number'?fmt(result.value):result.value,result.unit||'', 'OK']})}
-    catch(e){body.push({row:r,values:[...r,'','',e.message]})}
-  }
-  state.rows=body.length; $('mRows').textContent=state.rows;
-  $('batch').lastResult=body;
-  renderBatchTable(body,headers,c);
-  toast(`Processed ${body.length} rows`);
-}
-function rIndex(row,header){const idx=csvRows[0].indexOf(header);return idx>=0?csvRows[row][idx]:''}
-function renderBatchTable(body,headers,c){
-  $('batchTableWrap').classList.remove('hidden');
-  $('batchHead').innerHTML='<tr>'+[...headers,'Result','Unit','Status'].map(x=>`<th>${x}</th>`).join('')+'</tr>';
-  $('batchBody').innerHTML=body.map(b=>'<tr>'+b.values.map(x=>`<td>${x}</td>`).join('')+'</tr>').join('');
-}
-$('closeModal').onclick=()=>$('batchModal').classList.add('hidden');
-$('batchModal').onclick=e=>{if(e.target===$('batchModal'))$('batchModal').classList.add('hidden')};
-$('downloadBatch').onclick=()=>{
-  if(!state.batch||!state.batch.lastResult){toast('Run batch first');return}
-  const headers=[...csvRows[0],'Result','Unit','Status'];
-  const lines=[headers.map(csvEsc).join(',')];
-  for(const r of state.batch.lastResult)lines.push(r.values.map(csvEsc).join(','));
-  downloadBlob(lines.join('\\n'),'aznur-ier-batch-results.csv','text/csv');
+/* ---------- state ---------- */
+let storedFavs=[];try{
+  const raw=JSON.parse(localStorage.getItem('aznur_ier_favs')||'[]');
+  if(Array.isArray(raw))storedFavs=raw.filter(v=>typeof v==='string');
+}catch(e){}
+const storedDone=Math.max(0,Number(localStorage.getItem('aznur_ier_done')||0));
+const state={favoriteOnly:false,favorites:new Set(storedFavs),done:Number.isFinite(storedDone)?storedDone:0,rows:0};
+let savedInputs={};try{
+  const raw=JSON.parse(localStorage.getItem('aznur_ier_inputs')||'{}');
+  if(raw&&typeof raw==='object'&&!Array.isArray(raw))savedInputs=raw;
+}catch(e){}
+function saveState(){localStorage.setItem('aznur_ier_favs',JSON.stringify([...state.favorites]));
+  localStorage.setItem('aznur_ier_done',String(state.done))}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),1900)}
+
+/* ---------- pane organisation ---------- */
+const PANES={
+ radioactivity:{ids:['decay','halflife','decayconstant','atoms','activityFromAtoms','decayCorrection','specificActivity','volumeActivity','surfaceActivity','unitActivity','energy']},
+ measurement:{ids:['netCounts','countRate','countingUncertainty','percentDifference','relativeError','percentRecovery','efficiency','activityFromCps','gammaActivity','deadtime','mdaCurrie','requiredCounting']},
+ environment:{ids:['dryWet','wetDry','moisture','volumeMass','porosity','inventory','layeredInventory','kd','simpleFlux']},
+ transport:{ids:['riverDischarge','radFlux','dailyLoad','annualLoad','sedimentFlux','riverMassBalance','residence','dilution','oceanInventory','deposition','washout','windTravel']},
+ modeling:{ids:['firstOrder','doublingTime','compartment','steadyState','twoCompartment','massBalance','timeIntegrated','transferFactor','bioaccumulation','effectiveHalfLife']},
+ chemistry:{ids:['sorptionPercent','desorptionPercent','recovery','totalRecovery']},
+ exposure:{ids:['foodIntake','waterIntake','inhalation','doseRate','cumulativeDose']},
+ analysis:{ids:['mean','weightedMean','geomean','percentChange','cv','ci95','poissonRate','rmse','mae','r2','regressionSlope','coordinateDistance','decimalDMS','sampleSize','gridSpacing']}
 };
-function csvEsc(x){x=String(x??'');return /[",\\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x}
-state.batch={lastResult:null};
-showCategories();
-selectCalc('decay');
-$('mCalcs').textContent=calculators.length;
-$('mFav').textContent=state.favorites.size;
-$('mDone').textContent=state.done;
+function calcPane(id){for(const k in PANES)if(PANES[k].ids.includes(id))return k;return null}
+
+/* ---------- card rendering ---------- */
+function cardHTML(c,accent){
+ const span=c.inputs.length<=2?'span-4':'span-6';
+ const fields=c.inputs.map(i=>{
+  if(i.type==='select'){
+   const saved=savedInputs[c.id]&&savedInputs[c.id][i.id]!==undefined?savedInputs[c.id][i.id]:i.def;
+   const selected=i.options.includes(saved)?saved:i.def;
+   return `<div class="field no-unit"><label title="${esc(i.help||'')}">${esc(i.label)}</label><select id="in_${c.id}_${i.id}">${i.options.map(o=>`<option${o===selected?' selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+  }
+  const saved=savedInputs[c.id]&&savedInputs[c.id][i.id]!==undefined?savedInputs[c.id][i.id]:i.def;
+  return `<div class="field"><label title="${esc(i.help||'')}">${esc(i.label)}</label><input id="in_${c.id}_${i.id}" type="number" step="any" value="${esc(saved)}"><span class="unit" title="${esc(i.unit)}">${esc(i.unit)}</span></div>`;
+ }).join('');
+ const fav=state.favorites.has(c.id);
+ return `<div class="card ${span}${accent?' accent':''}" id="tool-${c.id}" data-calc="${c.id}">
+  <h2>${esc(c.title)} <small>${esc(c.category)}</small></h2>
+  <div class="fields">${fields}</div>
+  <div class="actions">
+   <button class="btn primary" data-run="${c.id}">Calculate</button>
+   <button class="btn${fav?' on':''}" data-fav="${c.id}">${fav?'★ Saved':'☆ Save'}</button>
+  </div>
+  <div class="results" id="out_${c.id}" aria-live="polite"></div>
+  <div class="formula">${esc(c.formula)}</div>
+ </div>`;
+}
+function buildCards(){
+ for(const k in PANES){
+  document.querySelector('#pane-'+k+' .grid').innerHTML=
+   PANES[k].ids.map((id,i)=>cardHTML(byId(id),i===0)).join('');
+ }
+}
+function fillCounts(){
+ document.querySelectorAll('.side-btn').forEach(b=>{
+  const k=b.dataset.pane,f=b.querySelector('b');if(!f)return;
+  f.textContent=k==='home'?calculators.length:(PANES[k]?('0'+PANES[k].ids.length).slice(-2):'N/A');
+ });
+}
+function getValues(c){const v={};
+ for(const i of c.inputs){const el=document.getElementById(`in_${c.id}_${i.id}`);
+  if(!el)continue;
+  if(i.type==='select')v[i.id]=el.value;
+  else{const n=Number(el.value);if(!Number.isFinite(n))throw new Error(`Enter a valid value for "${i.label}".`);v[i.id]=n}}
+ return v}
+function runCalc(id){const c=byId(id),el=$('out_'+id);if(!c||!el)return;
+ try{const r=c.fn(getValues(c));
+  el.innerHTML=[st(r.label,r.value,r.unit,'hot'),...(r.extra||[]).map(k=>st(k.label,k.value,k.unit))].join('');
+  state.done++;saveState();updateMetrics('OK');flash($('tool-'+id));
+ }catch(e){errStat(el,e.message);updateMetrics('Error')}}
+function toggleFav(id){state.favorites.has(id)?state.favorites.delete(id):state.favorites.add(id);saveState();
+ const btn=document.querySelector(`[data-fav="${id}"]`);
+ if(btn){const on=state.favorites.has(id);btn.classList.toggle('on',on);btn.textContent=on?'★ Saved':'☆ Save'}
+ renderSearch();updateMetrics()}
+
+/* ---------- navigation ---------- */
+function show(pane,noScroll){
+ document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='pane-'+pane));
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.pane===pane));
+ document.querySelectorAll('.side-btn').forEach(b=>b.classList.toggle('on',b.dataset.pane===pane));
+ if(!noScroll)window.scrollTo({top:0});
+ if(pane==='visual')setTimeout(()=>Lab.resize(),60);
+}
+document.querySelectorAll('.tab,.side-btn').forEach(b=>b.onclick=()=>show(b.dataset.pane));
+function goTool(id){const k=calcPane(id);if(!k)return;show(k,true);
+ setTimeout(()=>{const el=$('tool-'+id);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});flash(el)}},80)}
+
+/* ---------- search ---------- */
+function renderSearch(){
+ const q=$('toolSearch').value.trim().toLowerCase();
+ let list=calculators.filter(c=>!state.favoriteOnly||state.favorites.has(c.id));
+ if(q)list=list.filter(c=>(c.title+' '+c.category+' '+c.desc+' '+c.formula+' '+c.aliases.join(' ')).toLowerCase().includes(q));
+ $('searchCount').textContent=list.length+' shown';
+ $('toolList').innerHTML=list.length?list.map(c=>`<button class="list-btn" data-goto="${c.id}"><strong>${state.favorites.has(c.id)?'★ ':''}${esc(c.title)}</strong><span>${esc(c.category)} · ${esc(c.formula)}</span></button>`).join('')
+  :`<div class="no-results">No calculator matches the current search.</div>`;
+}
+ $('toolSearch').addEventListener('input',renderSearch);
+ $('clearSearch').onclick=()=>{$('toolSearch').value='';renderSearch()};
+ $('favOnly').onclick=()=>{state.favoriteOnly=!state.favoriteOnly;$('favOnly').classList.toggle('on',state.favoriteOnly);renderSearch()};
+
+/* ---------- global click delegation ---------- */
+document.addEventListener('click',e=>{
+ const run=e.target.closest('[data-run]');if(run){runCalc(run.dataset.run);return}
+ const fav=e.target.closest('[data-fav]');if(fav){toggleFav(fav.dataset.fav);return}
+ const go=e.target.closest('[data-goto]');if(go){goTool(go.dataset.goto)}
+});
+/* persist inputs on change */
+document.addEventListener('change',e=>{
+ if(!e.target.id||!e.target.id.startsWith('in_'))return;
+ const c=calculators.find(c=>e.target.id.startsWith('in_'+c.id+'_'));
+ if(!c)return;
+ const f=e.target.id.slice(3+c.id.length+1);
+ savedInputs[c.id]=savedInputs[c.id]||{};savedInputs[c.id][f]=e.target.value;
+ localStorage.setItem('aznur_ier_inputs',JSON.stringify(savedInputs));
+});
+
+/* ---------- metrics ---------- */
+function updateMetrics(status){
+ $('mCalcs').textContent=calculators.length;
+ $('mDone').textContent=state.done;
+ $('mFav').textContent=state.favorites.size;
+ $('mRows').textContent=state.rows;
+ if(status)$('mStatus').textContent=status;
+}
+
+/* ---------- quick checks ---------- */
+const num=id=>{const n=Number($(id).value);if(!Number.isFinite(n))throw new Error('Enter a valid number');return n};
+ $('qk1_run').onclick=()=>{try{
+ const a0=num('qk1_a0'),t=num('qk1_t'),h=num('qk1_h');
+ if(h<=0)throw new Error('Half-life must be positive');
+ const a=a0*Math.pow(2,-t/h);
+ $('qk1_out').innerHTML=st('Remaining activity',a,'Bq','hot')+st('Remaining fraction',a/a0)+st('Decayed',(1-a/a0)*100,'%','bad')+st('Decay constant λ',Math.log(2)/h,'1/year');
+ flash($('tool-qk1'));updateMetrics('OK');
+}catch(e){errStat($('qk1_out'),e.message)}};
+ $('qk2_run').onclick=()=>{try{
+ const a=num('qk2_a'),m=num('qk2_m');
+ if(m<=0)throw new Error('Mass must be positive');
+ $('qk2_out').innerHTML=st('Activity concentration',a/m,'Bq/kg','hot')+st('Per gram',a/m/1000,'Bq/g');
+ flash($('tool-qk2'));updateMetrics('OK');
+}catch(e){errStat($('qk2_out'),e.message)}};
+
+/* ---------- header actions ---------- */
+function dl(name,text){const b=new Blob([text],{type:'text/plain'});const a=document.createElement('a');
+ a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+ $('printBtn').onclick=()=>window.print();
+ $('resetBtn').onclick=()=>{['aznur_ier_favs','aznur_ier_done','aznur_ier_inputs'].forEach(k=>localStorage.removeItem(k));location.reload()};
+ $('exportBtn').onclick=()=>{dl('aznur-ier-state.json',JSON.stringify({app:'aznur-ier',version:1,favs:[...state.favorites],done:state.done,inputs:savedInputs},null,2),'application/json');toast('State exported')};
+ $('importBtn').onclick=()=>$('importFile').click();
+ $('importFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+ const rd=new FileReader();
+ rd.onload=()=>{try{const d=JSON.parse(rd.result);
+  state.favorites=new Set(d.favs||[]);state.done=d.done||0;savedInputs=d.inputs||{};
+  localStorage.setItem('aznur_ier_favs',JSON.stringify([...state.favorites]));
+  localStorage.setItem('aznur_ier_done',String(state.done));
+  localStorage.setItem('aznur_ier_inputs',JSON.stringify(savedInputs));
+  buildCards();renderSearch();updateMetrics('Imported');toast('State imported');
+ }catch(err){toast('Invalid state file')}};
+ rd.readAsText(f);e.target.value=''});
+
+/* ---------- CSV batch ---------- */
+let batch=null,lastBatchCSV='';
+function parseCSV(t){const rows=[];let row=[],cur='',q=false;
+ for(let i=0;i<t.length;i++){const ch=t[i];
+  if(q){if(ch==='"'){if(t[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}
+  else if(ch==='"')q=true;
+  else if(ch===','){row.push(cur);cur=''}
+  else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;row.push(cur);cur='';
+   if(row.length>1||row[0].trim()!=='')rows.push(row);row=[]}
+  else cur+=ch}
+ if(cur!==''||row.length){row.push(cur);rows.push(row)}
+ return rows.filter(r=>r.some(c=>c.trim()!==''))}
+function setBatch(rows){if(!rows||rows.length<2){toast('CSV needs a header plus data rows');return}
+ batch={header:rows[0].map(h=>h.trim()),rows:rows.slice(1)};
+ state.rows=batch.rows.length;updateMetrics('CSV loaded');
+ $('batchReady').classList.remove('hidden');$('batchSource').classList.add('hidden');
+ $('batchInfo').textContent=`${batch.rows.length} data rows · columns: ${batch.header.join(', ')}`;
+ buildMapping();toast(`Loaded ${batch.rows.length} rows`)}
+function buildMapping(){if(!batch)return;
+ const c=byId($('batchCalc').value)||calculators[0];
+ $('batchMap').innerHTML=c.inputs.map(i=>{
+  const lw=i.label.toLowerCase();
+  let g=batch.header.findIndex(h=>h&&h.toLowerCase()===lw);
+  if(g<0)g=batch.header.findIndex(h=>h&&h.toLowerCase().includes(lw.split(' ')[0]));
+  if(g<0)g=batch.header.findIndex(h=>h&&lw.includes(h.toLowerCase()));
+  return `<div class="mapf"><label>${esc(i.label)} <small>${esc(i.unit||i.type)}</small></label>
+   <select data-in="${i.id}"><option value="">Use default (${esc(i.def)})</option>${batch.header.map((h,j)=>`<option value="${j}"${j===g?' selected':''}>${esc(h)}</option>`).join('')}</select></div>`}).join('')}
+function openBatch(){$('batchModal').classList.remove('hidden');
+ if(!$('batchCalc').options.length){
+  $('batchCalc').innerHTML=calculators.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join('');
+  $('batchCalc').onchange=buildMapping}
+ if(batch){$('batchReady').classList.remove('hidden');$('batchSource').classList.add('hidden');
+  $('batchInfo').textContent=`${batch.rows.length} data rows · columns: ${batch.header.join(', ')}`;buildMapping()}
+ else{$('batchReady').classList.add('hidden');$('batchSource').classList.remove('hidden')}
+ setTimeout(()=>$('csvText').focus(),50)}
+ $('batchBtn').onclick=openBatch;$('csvPasteBtn').onclick=openBatch;
+ $('closeModal').onclick=()=>$('batchModal').classList.add('hidden');
+ $('batchModal').addEventListener('click',e=>{if(e.target.id==='batchModal')$('batchModal').classList.add('hidden')});
+ $('loadPaste').onclick=()=>{const t=$('csvText').value.trim();if(!t)return toast('Paste CSV text first');setBatch(parseCSV(t))};
+ $('csvBrowse').onclick=()=>$('csvFile').click();
+ $('csvFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+ const rd=new FileReader();rd.onload=()=>setBatch(parseCSV(rd.result));rd.readAsText(f);e.target.value=''});
+const dz=$('dropZone');
+['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag')}));
+['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag')}));
+dz.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(!f)return;
+ const rd=new FileReader();rd.onload=()=>{setBatch(parseCSV(rd.result));openBatch()};rd.readAsText(f)});
+ $('runBatch').onclick=()=>{if(!batch)return;
+ const c=byId($('batchCalc').value)||calculators[0];
+ const map={};$('batchMap').querySelectorAll('select').forEach(s=>map[s.dataset.in]=s.value);
+ const mapped=c.inputs.filter(i=>map[i.id]!=='');
+ const outRows=[];let bad=0;
+ for(const row of batch.rows){const v={};let ok=true;
+  for(const i of c.inputs){const ci=map[i.id];
+   if(ci===''){v[i.id]=i.type==='select'?i.def:Number(i.def);continue}
+   const cell=String(row[+ci]||'').trim();
+   if(i.type==='select'){v[i.id]=cell}
+   else{const n=Number(cell);if(!Number.isFinite(n)||cell===''){ok=false;break}v[i.id]=n}}
+  if(!ok){bad++;continue}
+  try{const r=c.fn(v);outRows.push({v,r})}catch(e){bad++}}
+ if(!outRows.length){toast('No valid rows. Check the column mapping.');return}
+ const first=outRows[0].r,ex=(first.extra||[]);
+ const head=[...mapped.map(i=>i.label),first.label,...ex.map(k=>k.label)];
+ const cellCsv=x=>{const s=String(x);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+ lastBatchCSV=head.map(cellCsv).join(',')+'\n'+outRows.map(o=>[...mapped.map(i=>i.type==='select'?o.v[i.id]:fmt(o.v[i.id])),fmt(o.r.value),...o.r.extra.map(k=>fmt(k.value))].map(cellCsv).join(',')).join('\n');
+ $('batchHead').innerHTML='<tr>'+head.map(h=>`<th class="l">${esc(h)}</th>`).join('')+'</tr>';
+ $('batchBody').innerHTML=outRows.map(o=>'<tr>'+[...mapped.map(i=>i.type==='select'?esc(o.v[i.id]):fmt(o.v[i.id])),fmt(o.r.value),...o.r.extra.map(k=>fmt(k.value))].map(x=>`<td class="l">${x}</td>`).join('')+'</tr>').join('');
+ $('batchTableWrap').classList.remove('hidden');
+ updateMetrics('Batch done');toast(`Batch done · ${outRows.length} rows, ${bad} skipped`)};
+ $('downloadBatch').onclick=()=>{if(!lastBatchCSV)return toast('Run the batch first');dl('aznur-ier-batch.csv',lastBatchCSV,'text/csv;charset=utf-8')};
+
+/* ============================================================
+   VISUAL LAB | decay · shielding · counting · spectrum · chain
+   ============================================================ */
+const Lab=(()=>{
+const cv=$('labCanvas'),ctx=cv.getContext('2d');
+const T={grid:'#28241e',axis:'#4a4238',text:'#a8a29e',dim:'#78716c',bright:'#f5f5f4',
+ trace:'#fbbf24',teal:'#34d399',sky:'#7dd3fc',rose:'#fda4af'};
+let W=900,H=420,mode='decay',running=true,speed=1,mx=-1,my=-1,last=0;
+const P={},S={};
+const fnt=s=>{ctx.font=s+'px "Cascadia Mono","IBM Plex Mono",Consolas,monospace'};
+const ln=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke()};
+const cir=(x,y,r)=>{ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill()};
+const fmtE=v=>{if(!isFinite(v))return 'N/A';const a=Math.abs(v);
+ if(a!==0&&(a>=1e5||a<1e-3))return v.toExponential(2);
+ return a>=100?v.toFixed(0):a>=10?v.toFixed(1):v.toFixed(2)};
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();
+ return Math.sqrt(-2*Math.log(u))*Math.cos(6.2832*v)}
+function pois(l){if(l<30){const L=Math.exp(-l);let k=0,p=1;do{k++;p*=Math.random()}while(p>L);return k-1}
+ return Math.max(0,Math.round(l+Math.sqrt(l)*gauss()))}
+function bat(lam,t){const n=lam.length,o=[];
+ for(let i=0;i<n;i++){let s=0;
+  for(let j=0;j<=i;j++){let num=1,den=1;
+   for(let k=0;k<=i;k++){if(k===j)continue;den*=(lam[k]-lam[j])||1e-15;if(k<i)num*=lam[k]}
+   s+=Math.exp(-lam[j]*t)*num/den}
+  o.push(Math.max(0,s))}
+ return o}
+/* approximate mass attenuation coefficients (cm²/g) and densities */
+const MAT={
+ Water:{rho:1.0,col:'47,111,159',mu:[[.1,.171],[.2,.136],[.5,.0969],[1,.0707],[2,.0494],[5,.0303]]},
+ Concrete:{rho:2.3,col:'138,131,120',mu:[[.1,.178],[.2,.140],[.5,.0966],[1,.0698],[2,.0483],[5,.0291]]},
+ Aluminum:{rho:2.70,col:'192,200,208',mu:[[.1,.170],[.2,.122],[.5,.0874],[1,.0614],[2,.0432],[5,.0270]]},
+ Iron:{rho:7.87,col:'176,172,164',mu:[[.1,.371],[.2,.146],[.5,.0841],[1,.0599],[2,.0427],[5,.0272]]},
+ Lead:{rho:11.35,col:'154,160,168',mu:[[.1,5.549],[.2,.9985],[.5,.1614],[1,.0706],[2,.0461],[5,.0431]]}
+};
+function muOf(mat,E){const t=MAT[mat].mu;
+ for(let i=0;i<t.length-1;i++){const[e1,m1]=t[i],[e2,m2]=t[i+1];
+  if(E>=e1&&E<=e2){const f=(Math.log(E)-Math.log(e1))/(Math.log(e2)-Math.log(e1));
+   return Math.exp(Math.log(m1)+f*(Math.log(m2)-Math.log(m1)))}}
+ return t[t.length-1][1]*Math.pow(E/t[t.length-1][0],-.3)}
+
+const MODES={
+/* ---------------- DECAY CURVE ---------------- */
+decay:{
+ hint:'Activity versus time for a chosen half-life. Amber dots mark each half-life; hover the stage for exact values.',
+ controls:[
+  {k:'hl',label:'Half-life',log:true,lo:-2,hi:5,def:30.05,fmt:v=>fmtE(v)+' y'},
+  {k:'win',label:'Time window',lo:1,hi:10,step:.5,def:6,fmt:v=>v.toFixed(1)+' T½'},
+  {k:'a0',label:'Initial activity',log:true,lo:0,hi:9,def:1e6,fmt:v=>v.toExponential(0)+' Bq'},
+  {k:'scale',label:'Y scale',type:'select',options:['Linear','Log'],def:'Linear'}],
+ reset(){S.decay={f:0,cur:null}},
+ step(dt){const s=S.decay;s.f+=dt*.11;if(s.f>1.15)s.f=0},
+ draw(){const p=P.decay,s=S.decay;ctx.clearRect(0,0,W,H);
+  const M={l:56,r:16,t:20,b:40},pw=W-M.l-M.r,ph=H-M.t-M.b,win=p.win,log=p.scale==='Log';
+  const ymin=log?Math.max(1e-6,Math.pow(2,-win-1)):0;
+  const X=u=>M.l+u/win*pw;
+  const Y=v=>{const t=log?(Math.log10(Math.max(v,ymin))-Math.log10(ymin))/(-Math.log10(ymin)):(v-ymin)/(1-ymin);
+   return M.t+(1-Math.min(1,Math.max(0,t)))*ph};
+  ctx.lineWidth=1;fnt(9);ctx.textAlign='center';ctx.fillStyle=T.text;
+  const sk=win>8?2:1;
+  for(let k=0;k<=win;k+=sk){const x=X(k);ctx.strokeStyle=T.grid;ln(x,M.t,x,M.t+ph);ctx.fillText(k,x,M.t+ph+14)}
+  const jmax=Math.ceil(win)+2;
+  for(let j=0;j<=jmax;j++){const v=Math.pow(2,-j);if(v<ymin)break;const y=Y(v);
+   ctx.strokeStyle=T.grid;ln(M.l,y,M.l+pw,y);ctx.textAlign='right';
+   ctx.fillText(log?(v>=.01?String(v):v.toExponential(0)):(v*100)+'%',M.l-6,y+3)}
+  ctx.strokeStyle=T.axis;ctx.strokeRect(M.l,M.t,pw,ph);
+  ctx.fillStyle=T.dim;ctx.textAlign='center';
+  ctx.fillText('time (half-lives) · T½ = '+fmtE(p.hl)+' y',M.l+pw/2,H-8);
+  ctx.save();ctx.translate(12,M.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('A / A₀',0,0);ctx.restore();
+  ctx.beginPath();
+  for(let i=0;i<=260;i++){const u=win*i/260,x=X(u),y=Y(Math.pow(2,-u));i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+  ctx.strokeStyle=T.trace;ctx.lineWidth=2.2;ctx.stroke();ctx.lineWidth=1;
+  ctx.fillStyle=T.bright;
+  for(let k=0;k<=win;k++){const v=Math.pow(2,-k);if(v>=ymin)cir(X(k),Y(v),3)}
+  let u=s.f*win;
+  if(mx>=M.l&&mx<=M.l+pw&&my>=M.t&&my<=M.t+ph)u=(mx-M.l)/pw*win;
+  u=Math.max(0,Math.min(win,u));
+  const v=Math.pow(2,-u);
+  ctx.setLineDash([3,4]);ctx.strokeStyle='rgba(245,245,244,.35)';
+  ln(X(u),M.t,X(u),M.t+ph);ln(M.l,Y(v),M.l+pw,Y(v));ctx.setLineDash([]);
+  ctx.fillStyle=T.trace;cir(X(u),Y(v),5);
+  s.cur={u,v}},
+ read(){const p=P.decay,s=S.decay;if(!s.cur)return[];
+  return[['t',fmtE(s.cur.u*p.hl)+' y'],['t / T½',s.cur.u.toFixed(2)],
+   ['A',fmtE(s.cur.v*p.a0)+' Bq'],['remaining',(s.cur.v*100).toFixed(2)+' %']]}
+},
+/* ---------------- SHIELDING ---------------- */
+shield:{
+ hint:'A collimated photon beam crosses a slab. Watch absorption, transmission, HVL and TVL respond to energy, material and thickness. μ/ρ data are approximate.',
+ controls:[
+  {k:'E',label:'Photon energy',log:true,lo:-1,hi:.7,def:.662,fmt:v=>v.toFixed(3)+' MeV'},
+  {k:'mat',label:'Material',type:'select',options:['Water','Concrete','Aluminum','Iron','Lead'],def:'Lead'},
+  {k:'x',label:'Slab thickness',log:true,lo:-2,hi:2,def:5,fmt:v=>fmtE(v)+' cm'},
+  {k:'rate',label:'Beam rate',lo:10,hi:400,step:5,def:150,fmt:v=>v+' /s'}],
+ reset(){S.shield={ps:[],fl:[],acc:0,n:0}},
+ onParam(){MODES.shield.reset()},
+ geo(){return{src:W*.05,xs:W*.32,xe:W*.68,det:W*.88,y:H*.47,ppc:(W*.36)/Math.max(P.shield.x,.01)}},
+ step(dt){const s=S.shield,p=P.shield;if(!s.ps)return;
+  const mu=muOf(p.mat,p.E)*MAT[p.mat].rho,g=this.geo();
+  s.acc+=p.rate*dt;
+  while(s.acc>=1){s.acc--;s.ps.push({x:g.src+4,y:g.y+(Math.random()-.5)*9})}
+  const v=260;
+  for(let i=s.ps.length-1;i>=0;i--){const q=s.ps[i],nx=q.x+v*dt;
+   const a=Math.max(q.x,g.xs),b=Math.min(nx,g.xe);
+   if(b>a){const dcm=(b-a)/g.ppc;
+    if(Math.random()>Math.exp(-mu*dcm)){s.fl.push({x:q.x,y:q.y,t:0});s.ps.splice(i,1);continue}}
+   q.x=nx;if(q.x>g.det-4){s.n++;s.ps.splice(i,1)}}
+  for(let i=s.fl.length-1;i>=0;i--){s.fl[i].t+=dt;if(s.fl[i].t>.6)s.fl.splice(i,1)}},
+ draw(){const p=P.shield,s=S.shield;if(!s.ps)return;
+  const g=this.geo(),mu=muOf(p.mat,p.E)*MAT[p.mat].rho,Tx=Math.exp(-mu*p.x);
+  ctx.clearRect(0,0,W,H);
+  const top=H*.16,bot=H*.84;
+  ctx.fillStyle=`rgba(${MAT[p.mat].col},.14)`;ctx.strokeStyle=T.axis;
+  ctx.fillRect(g.xs,top,g.xe-g.xs,bot-top);ctx.strokeRect(g.xs,top,g.xe-g.xs,bot-top);
+  const gr=ctx.createLinearGradient(g.xs,0,g.xe,0);
+  gr.addColorStop(0,'rgba(251,191,36,.30)');
+  gr.addColorStop(1,`rgba(251,191,36,${(.30*Tx).toFixed(3)})`);
+  ctx.fillStyle=gr;ctx.fillRect(g.xs,g.y-14,g.xe-g.xs,28);
+  ctx.strokeStyle='rgba(168,162,158,.35)';ctx.setLineDash([4,4]);
+  ln(g.src,g.y,g.xs,g.y);ln(g.xe,g.y,g.det-8,g.y);ctx.setLineDash([]);
+  ctx.fillStyle=T.trace;cir(g.src,g.y,7);
+  ctx.strokeStyle='#141110';ctx.lineWidth=2;cir(g.src,g.y,3);ctx.lineWidth=1;
+  ctx.fillStyle='#332d26';ctx.strokeStyle=T.axis;
+  ctx.fillRect(g.det,g.y-36,14,72);ctx.strokeRect(g.det,g.y-36,14,72);
+  const mh=68*Tx;ctx.fillStyle='rgba(52,211,153,.75)';ctx.fillRect(g.det+3,g.y+33-mh,8,mh);
+  for(const q of s.ps){ctx.fillStyle='rgba(251,191,36,.22)';cir(q.x,q.y,4);
+   ctx.fillStyle=T.bright;cir(q.x,q.y,1.9)}
+  for(const f of s.fl){const a=Math.max(0,1-f.t/.6);
+   ctx.strokeStyle=`rgba(253,164,175,${a.toFixed(2)})`;
+   ctx.beginPath();ctx.arc(f.x,f.y,3+f.t*50,0,6.2832);ctx.stroke()}
+  fnt(10);ctx.fillStyle=T.text;ctx.textAlign='left';
+  ctx.fillText('source',g.src-14,g.y+58);
+  ctx.fillText(`${p.mat} · ${fmtE(p.x)} cm`,g.xs+8,top-8);
+  ctx.fillText(`I/I₀ = e^(−μx) = ${(100*Tx).toFixed(2)} %`,g.xs+8,bot+18);
+  ctx.fillText('detector',g.det-18,g.y+58);
+  ctx.fillStyle=T.teal;ctx.fillText('detected: '+s.n,g.det-24,bot+18)},
+ read(){const p=P.shield,mu=muOf(p.mat,p.E)*MAT[p.mat].rho;
+  return[['μ',mu.toFixed(3)+' cm⁻¹'],['I/I₀',(100*Math.exp(-mu*p.x)).toFixed(3)+' %'],
+   ['HVL',fmtE(Math.LN2/mu)+' cm'],['TVL',fmtE(Math.LN10/mu)+' cm'],
+   ['counts',String(S.shield&&S.shield.n||0)]]}
+},
+/* ---------------- COUNTING STATISTICS ---------------- */
+count:{
+ hint:'Repeat the same counting measurement: every trial draws from a Poisson distribution. The histogram converges to the true pmf (amber) and the Gaussian approximation (dashed blue).',
+ controls:[{k:'lam',label:'Expected counts λ',lo:.5,hi:200,step:.5,def:20,fmt:v=>v.toFixed(1)}],
+ reset(){S.count={h:new Array(600).fill(0),n:0,sum:0,s2:0}},
+ onParam(){MODES.count.reset()},
+ step(dt){const s=S.count,p=P.count;if(!s.h)return;
+  const k=Math.max(1,Math.round(70*dt));
+  for(let i=0;i<k;i++){const v=pois(p.lam);if(v<600)s.h[v]++;s.n++;s.sum+=v;s.s2+=v*v}},
+ draw(){const s=S.count,p=P.count;if(!s.h)return;
+  ctx.clearRect(0,0,W,H);
+  const cap=Math.max(9,Math.ceil(p.lam+4*Math.sqrt(p.lam))+2);
+  const M={l:48,r:14,t:18,b:36},pw=W-M.l-M.r,ph=H-M.t-M.b;
+  let mx2=1;for(let k=0;k<=cap;k++)mx2=Math.max(mx2,s.h[k]||0);
+  const X=k=>M.l+(k+.5)/(cap+1)*pw,bw=pw/(cap+1)*.72;
+  fnt(9);ctx.lineWidth=1;
+  const sk=Math.max(1,Math.ceil(cap/12));
+  for(let k=0;k<=cap;k+=sk){ctx.strokeStyle=T.grid;ln(X(k),M.t,X(k),M.t+ph);
+   ctx.fillStyle=T.text;ctx.textAlign='center';ctx.fillText(k,X(k),M.t+ph+14)}
+  const nice=x=>{const q=Math.pow(10,Math.floor(Math.log10(x||1)));const m=x/q;
+   return(m>=5?10:m>=2?5:m>=1?2:1)*q};
+  const yt=nice(mx2/4);
+  for(let v=yt;v<=mx2;v+=yt){const y=M.t+ph*(1-v/mx2);
+   ctx.strokeStyle=T.grid;ln(M.l,y,M.l+pw,y);
+   ctx.fillStyle=T.text;ctx.textAlign='right';ctx.fillText(fmtE(v),M.l-5,y+3)}
+  ctx.strokeStyle=T.axis;ctx.strokeRect(M.l,M.t,pw,ph);
+  ctx.fillStyle=T.dim;ctx.textAlign='center';
+  ctx.fillText('counts per counting interval',M.l+pw/2,H-6);
+  ctx.fillStyle='#4a4238';
+  for(let k=0;k<=cap;k++){const h=ph*(s.h[k]||0)/mx2;
+   if(h>0)ctx.fillRect(X(k)-bw/2,M.t+ph-h,bw,h)}
+  if(s.n>=15){
+   ctx.beginPath();let pm=Math.exp(-p.lam);
+   for(let k=0;k<=cap;k++){const e=s.n*pm,y=M.t+ph*(1-Math.min(1,e/mx2));
+    k?ctx.lineTo(X(k),y):ctx.moveTo(X(k),y);pm*=p.lam/(k+1)}
+   ctx.strokeStyle=T.trace;ctx.lineWidth=2;ctx.stroke();ctx.lineWidth=1;
+   if(p.lam>=9){ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(125,211,252,.8)';ctx.beginPath();
+    for(let k=0;k<=cap;k++){const e=s.n*Math.exp(-((k-p.lam)**2)/(2*p.lam))/Math.sqrt(6.2832*p.lam);
+     const y=M.t+ph*(1-Math.min(1,e/mx2));k?ctx.lineTo(X(k),y):ctx.moveTo(X(k),y)}
+    ctx.stroke();ctx.setLineDash([])}}
+  if(s.n>0){const m=s.sum/s.n;ctx.strokeStyle=T.teal;ctx.setLineDash([2,3]);
+   ln(X(m),M.t,X(m),M.t+ph);ctx.setLineDash([]);
+   ctx.fillStyle=T.teal;ctx.textAlign='left';ctx.fillText('x̄',Math.min(X(m)+5,M.l+pw-12),M.t+12)}},
+ read(){const s=S.count,p=P.count;if(!s.n)return[['trials','0'],['λ',p.lam.toFixed(1)]];
+  const m=s.sum/s.n,sd=s.n>1?Math.sqrt(Math.max(0,(s.s2-s.n*m*m)/(s.n-1))):0;
+  return[['trials',String(s.n)],['mean',m.toFixed(2)],['σ observed',sd.toFixed(2)],
+   ['√λ',Math.sqrt(p.lam).toFixed(2)],['CV',(m?sd/m*100:0).toFixed(1)+' %']]}
+},
+/* ---------------- GAMMA SPECTRUM ---------------- */
+spectrum:{
+ hint:'A γ-ray spectrum accumulates in real time: Gaussian photopeak, Compton continuum, backscatter peak and flat background. Hover to inspect a channel; dashed band marks the FWHM.',
+ controls:[
+  {k:'E',label:'Peak energy',lo:100,hi:2000,step:5,def:662,fmt:v=>v.toFixed(0)+' keV'},
+  {k:'fw',label:'Resolution',lo:2,hi:15,step:.5,def:6,fmt:v=>v.toFixed(1)+' % FWHM'},
+  {k:'pk',label:'Peak area',log:true,lo:3,hi:6,def:1e5,fmt:v=>v.toExponential(0)},
+  {k:'bg',label:'Background',log:true,lo:-1,hi:2,def:1,fmt:v=>fmtE(v)+' /keV'},
+  {k:'comp',label:'Continuum',type:'select',options:['Compton + backscatter','Peak only'],def:'Compton + backscatter'}],
+ reset(){S.spectrum={ch:new Array(256).fill(0),tot:0,lt:0}},
+ step(dt){const s=S.spectrum,p=P.spectrum;if(!s.ch)return;
+  const comp=p.comp==='Compton + backscatter';
+  const cont=comp?.45*p.pk:0,bt=p.bg*2560,tot=p.pk+cont+bt;
+  const sig=p.fw/100*p.E/2.355,edge=p.E*(1-1/(1+2*p.E/511)),ebs=p.E/(1+2*p.E/511);
+  const k=Math.max(1,Math.round(4000*dt));
+  for(let i=0;i<k;i++){const u=Math.random();let keV;
+   if(u<bt/tot)keV=Math.random()*2560;
+   else if(u<(bt+cont)/tot){
+    if(Math.random()<.22)keV=ebs+30*gauss();
+    else{const q=Math.random();keV=edge*q*q}}
+   else keV=p.E+sig*gauss();
+   const c=Math.max(0,Math.min(255,Math.round(keV/10)));
+   s.ch[c]++;s.tot++}
+  s.lt+=dt},
+ draw(){const s=S.spectrum,p=P.spectrum;if(!s.ch)return;
+  ctx.clearRect(0,0,W,H);
+  const M={l:48,r:14,t:20,b:36},pw=W-M.l-M.r,ph=H-M.t-M.b;
+  let mx2=1;for(const c of s.ch)mx2=Math.max(mx2,c);
+  const X=e=>M.l+e/2560*pw,Y=c=>M.t+ph*(1-c/mx2);
+  fnt(9);ctx.lineWidth=1;
+  for(let e=0;e<=2560;e+=500){ctx.strokeStyle=T.grid;ln(X(e),M.t,X(e),M.t+ph);
+   ctx.fillStyle=T.text;ctx.textAlign='center';ctx.fillText(e,X(e),M.t+ph+14)}
+  ctx.strokeStyle=T.axis;ctx.strokeRect(M.l,M.t,pw,ph);
+  ctx.fillStyle=T.dim;ctx.textAlign='center';ctx.fillText('energy (keV)',M.l+pw/2,H-6);
+  ctx.beginPath();ctx.moveTo(M.l,M.t+ph);
+  for(let i=0;i<256;i++)ctx.lineTo(M.l+(i+.5)/256*pw,Y(s.ch[i]));
+  ctx.lineTo(M.l+pw,M.t+ph);ctx.closePath();
+  ctx.fillStyle='rgba(251,191,36,.14)';ctx.fill();
+  ctx.strokeStyle=T.trace;ctx.lineWidth=1.6;ctx.stroke();ctx.lineWidth=1;
+  const fw=p.fw/100*p.E,sig=fw/2.355;
+  let pk=0;for(let i=0;i<256;i++){const e=(i+.5)*10;if(Math.abs(e-p.E)<3*fw)pk=Math.max(pk,s.ch[i])}
+  ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(251,191,36,.55)';
+  ln(X(p.E),M.t,X(p.E),M.t+ph);
+  ln(X(p.E-fw/2),Y(pk/2),X(p.E+fw/2),Y(pk/2));ctx.setLineDash([]);
+  ctx.fillStyle=T.text;ctx.textAlign='left';
+  ctx.fillText('FWHM',X(p.E+fw/2)+6,Y(pk/2)+3);
+  let hov='';
+  if(mx>=M.l&&mx<=M.l+pw){const e=(mx-M.l)/pw*2560,c=Math.max(0,Math.min(255,Math.round(e/10)));
+   ctx.strokeStyle='rgba(245,245,244,.5)';ln(mx,M.t,mx,M.t+ph);
+   hov=`${e.toFixed(0)} keV · ${s.ch[c]} cnt`}
+  ctx.fillStyle=T.dim;ctx.textAlign='right';
+  ctx.fillText(hov||`counts: ${s.tot}`,M.l+pw,M.t-6)},
+ read(){const s=S.spectrum,p=P.spectrum;if(!s.ch)return[];
+  const sig=p.fw/100*p.E/2.355;let sw=0,sm=0;
+  for(let i=0;i<256;i++){const e=(i+.5)*10;
+   if(Math.abs(e-p.E)<3*sig){sm+=e*s.ch[i];sw+=s.ch[i]}}
+  const cent=sw?sm/sw:p.E;
+  return[['counts',fmtE(s.tot)],['live time',s.lt.toFixed(1)+' s'],
+   ['centroid',cent.toFixed(1)+' keV'],['FWHM',(p.fw/100*p.E).toFixed(1)+' keV'],
+   ['rate',fmtE(s.tot/Math.max(s.lt,.001))+' /s']]}
+},
+/* ---------------- DECAY CHAIN ---------------- */
+chain:{
+ hint:'A to B to C to D (stable) solved with the Bateman equations. Daughters rise, peak and decay away while the stable end-product accumulates. Hover for values.',
+ controls:[
+  {k:'t1',label:'T½ A (parent)',log:true,lo:-2,hi:4,def:30.05,fmt:v=>fmtE(v)+' y'},
+  {k:'t2',label:'T½ B',log:true,lo:-2,hi:4,def:2,fmt:v=>fmtE(v)+' y'},
+  {k:'t3',label:'T½ C',log:true,lo:-2,hi:4,def:.5,fmt:v=>fmtE(v)+' y'},
+  {k:'win',label:'Time window',lo:1,hi:12,step:.5,def:6,fmt:v=>v.toFixed(1)+' T½A'}],
+ reset(){S.chain={f:0,cur:null}},
+ step(dt){const s=S.chain;s.f+=dt*.1;if(s.f>1.12)s.f=0},
+ draw(){const p=P.chain,s=S.chain;ctx.clearRect(0,0,W,H);
+  const lam=[Math.LN2/p.t1,Math.LN2/p.t2,Math.LN2/p.t3,0];
+  const tmax=p.win*p.t1;
+  const M={l:52,r:16,t:20,b:40},pw=W-M.l-M.r,ph=H-M.t-M.b;
+  const X=t=>M.l+t/tmax*pw,Y=f=>M.t+(1-Math.min(1,f))*.96*ph;
+  fnt(9);ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){const t=tmax*i/5,x=X(t);
+   ctx.strokeStyle=T.grid;ln(x,M.t,x,M.t+ph);
+   ctx.fillStyle=T.text;ctx.textAlign='center';ctx.fillText(fmtE(t),x,M.t+ph+14)}
+  for(let j=0;j<=4;j++){const y=M.t+ph*j/4;ctx.strokeStyle=T.grid;ln(M.l,y,M.l+pw,y);
+   ctx.fillStyle=T.text;ctx.textAlign='right';ctx.fillText((1-j/4).toFixed(2),M.l-6,y+3)}
+  ctx.strokeStyle=T.axis;ctx.strokeRect(M.l,M.t,pw,ph);
+  ctx.fillStyle=T.dim;ctx.textAlign='center';
+  ctx.fillText('time (years)',M.l+pw/2,H-8);
+  const cols=[T.trace,T.teal,T.sky,T.rose],names=['A parent','B','C','D stable'];
+  const NP=240,F=[[],[],[],[]];
+  for(let i=0;i<=NP;i++){const b=bat(lam,tmax*i/NP);for(let c=0;c<4;c++)F[c].push(b[c])}
+  for(let c=0;c<4;c++){ctx.beginPath();
+   for(let i=0;i<=NP;i++){const x=M.l+pw*i/NP,y=Y(F[c][i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+   ctx.strokeStyle=cols[c];ctx.lineWidth=c===0?2.4:1.8;ctx.stroke()}
+  ctx.lineWidth=1;
+  let t=s.f*tmax;
+  if(mx>=M.l&&mx<=M.l+pw&&my>=M.t&&my<=M.t+ph)t=(mx-M.l)/pw*tmax;
+  t=Math.max(0,Math.min(tmax,t));
+  const b=bat(lam,t);
+  ctx.setLineDash([3,4]);ctx.strokeStyle='rgba(245,245,244,.35)';
+  ln(X(t),M.t,X(t),M.t+ph);ctx.setLineDash([]);
+  for(let c=0;c<4;c++){ctx.fillStyle=cols[c];cir(X(t),Y(b[c]),4)}
+  ctx.textAlign='left';fnt(10);
+  names.forEach((n,c)=>{ctx.fillStyle=cols[c];
+   ctx.fillRect(M.l+10,M.t+10+c*16,8,8);
+   ctx.fillStyle=T.text;ctx.fillText(n+'  '+b[c].toFixed(3),M.l+24,M.t+18+c*16)});
+  s.cur={t,b}},
+ read(){const s=S.chain;if(!s.cur)return[];
+  return[['t',fmtE(s.cur.t)+' y'],['A',s.cur.b[0].toFixed(3)],['B',s.cur.b[1].toFixed(3)],
+   ['C',s.cur.b[2].toFixed(3)],['D',s.cur.b[3].toFixed(3)]]}
+}
+};
+
+/* ---------- lab plumbing ---------- */
+function buildControls(){const m=MODES[mode],p=P[mode];
+ $('labControls').innerHTML=m.controls.map(c=>{
+  if(c.type==='select')return `<div class="ctl"><div class="ctl-row"><label>${c.label}</label></div>
+   <select data-k="${c.k}">${c.options.map(o=>`<option${o===p[c.k]?' selected':''}>${o}</option>`).join('')}</select></div>`;
+  const sv=c.log?Math.log10(p[c.k]):p[c.k];
+  return `<div class="ctl"><div class="ctl-row"><label>${c.label}</label><span class="ctl-val" id="cv_${c.k}">${c.fmt(p[c.k])}</span></div>
+   <input type="range" data-k="${c.k}" min="${c.lo}" max="${c.hi}" step="${c.log?0.01:(c.step||1)}" value="${sv}"></div>`}).join('');
+ $('labControls').querySelectorAll('input[type=range]').forEach(r=>{
+  r.addEventListener('input',()=>{const c=MODES[mode].controls.find(x=>x.k===r.dataset.k);
+   const v=c.log?Math.pow(10,+r.value):+r.value;
+   P[mode][c.k]=v;$('cv_'+c.k).textContent=c.fmt(v);
+   if(MODES[mode].onParam)MODES[mode].onParam()})});
+ $('labControls').querySelectorAll('select').forEach(sl=>{
+  sl.addEventListener('change',()=>{P[mode][sl.dataset.k]=sl.value;
+   if(MODES[mode].onParam)MODES[mode].onParam()})})}
+function setMode(k){mode=k;
+ document.querySelectorAll('.lab-mode').forEach(b=>b.classList.toggle('on',b.dataset.mode===k));
+ $('labHint').textContent=MODES[k].hint;buildControls();MODES[k].reset()}
+function resize(){const r=cv.parentElement.getBoundingClientRect(),d=window.devicePixelRatio||1;
+ W=r.width;H=r.height;cv.width=Math.round(W*d);cv.height=Math.round(H*d);ctx.setTransform(d,0,0,d,0,0)}
+window.addEventListener('resize',resize);
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top});
+cv.addEventListener('pointerleave',()=>{mx=my=-1});
+document.querySelectorAll('.lab-mode').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+ $('labPlay').onclick=()=>{running=!running;$('labPlay').textContent=running?'⏸':'▶'};
+ $('labReset').onclick=()=>MODES[mode].reset();
+ $('labSpeed').addEventListener('input',e=>{speed=+e.target.value;$('labSpeedVal').textContent=speed.toFixed(1)+'×'});
+function pills(arr){$('labRead').innerHTML=arr.map(([k,v])=>`<div class="rpill">${k} <b>${v}</b></div>`).join('')}
+for(const k in MODES){P[k]={};MODES[k].controls.forEach(c=>P[k][c.k]=c.def)}
+function frame(ts){requestAnimationFrame(frame);
+ const dt=Math.min(.05,(ts-(last||ts))/1000);last=ts;
+ if(W<50)resize();
+ if(running)MODES[mode].step(dt*speed);
+ MODES[mode].draw();pills(MODES[mode].read())}
+requestAnimationFrame(frame);
+return{resize,setMode};
+})();
+
+/* ---------- init ---------- */
+buildCards();
+fillCounts();
+renderSearch();
+updateMetrics();
+Lab.setMode('decay');
 </script>
 </body>
 </html>
